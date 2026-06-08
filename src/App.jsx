@@ -778,38 +778,74 @@ const submitLead = async (finalData = data) => {
             )}
 
             {current.type === "appointment" && (
-              <div className="mt-7 space-y-4">
-                <input
-                  type="date"
-                  value={data.preferred_date}
-                  onChange={(e) =>
-                    setData({ ...data, preferred_date: e.target.value })
-                  }
-                  className="w-full rounded-2xl border-2 border-slate-200 p-5 text-lg font-bold text-[#08243a] outline-none focus:border-violet-500"
-                />
+  <div className="mt-7 space-y-4">
 
-                <input
-                  type="time"
-                  value={data.preferred_time}
-                  onChange={(e) =>
-                    setData({ ...data, preferred_time: e.target.value })
-                  }
-                  className="w-full rounded-2xl border-2 border-slate-200 p-5 text-lg font-bold text-[#08243a] outline-none focus:border-violet-500"
-                />
+    <div>
+      <label className="mb-2 block font-black text-[#08243a]">
+        Choisissez une date
+      </label>
 
-                <button
-                  disabled={!canContinue}
-                  onClick={() => submitLead()}
-                  className={`flex w-full items-center justify-center gap-2 rounded-2xl py-5 text-lg font-black transition ${
-                    canContinue
-                      ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg shadow-violet-200"
-                      : "cursor-not-allowed bg-slate-200 text-slate-400"
-                  }`}
-                >
-                  Valider ma demande <ArrowRight size={20} />
-                </button>
-              </div>
-            )}
+      <input
+        type="date"
+        value={data.preferred_date}
+        onChange={(e) =>
+          setData({ ...data, preferred_date: e.target.value })
+        }
+        className="w-full rounded-2xl border-2 border-slate-200 bg-white p-5 text-lg font-bold text-[#08243a] outline-none focus:border-violet-500"
+      />
+    </div>
+
+    <div>
+      <label className="mb-2 block font-black text-[#08243a]">
+        Choisissez une heure
+      </label>
+
+      <select
+        value={data.preferred_time}
+        onChange={(e) =>
+          setData({ ...data, preferred_time: e.target.value })
+        }
+        className="w-full rounded-2xl border-2 border-slate-200 bg-white p-5 text-lg font-bold text-[#08243a] outline-none focus:border-violet-500"
+      >
+        <option value="">Sélectionner une heure</option>
+
+        <option value="08:00">08:00</option>
+        <option value="08:30">08:30</option>
+        <option value="09:00">09:00</option>
+        <option value="09:30">09:30</option>
+        <option value="10:00">10:00</option>
+        <option value="10:30">10:30</option>
+        <option value="11:00">11:00</option>
+        <option value="11:30">11:30</option>
+        <option value="12:00">12:00</option>
+        <option value="12:30">12:30</option>
+        <option value="13:00">13:00</option>
+        <option value="13:30">13:30</option>
+        <option value="14:00">14:00</option>
+        <option value="14:30">14:30</option>
+        <option value="15:00">15:00</option>
+        <option value="15:30">15:30</option>
+        <option value="16:00">16:00</option>
+        <option value="16:30">16:30</option>
+        <option value="17:00">17:00</option>
+        <option value="17:30">17:30</option>
+        <option value="18:00">18:00</option>
+      </select>
+    </div>
+
+    <button
+      disabled={!canContinue}
+      onClick={() => submitLead()}
+      className={`flex w-full items-center justify-center gap-2 rounded-2xl py-5 text-lg font-black transition ${
+        canContinue
+          ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg shadow-violet-200"
+          : "cursor-not-allowed bg-slate-200 text-slate-400"
+      }`}
+    >
+      Valider ma demande <ArrowRight size={20} />
+    </button>
+  </div>
+)}
           </div>
 
           {step > 0 && (
