@@ -396,8 +396,9 @@ function SimulationPage() {
       return;
     }
 
-    alert("Simulation envoyée ✅");
+    const [showSuccess, setShowSuccess] = useState(false);
     setStep(0);
+    window.scrollTo(0, 0);
     setData({
       household_size: 1,
       full_name: "",
@@ -731,6 +732,36 @@ function SimulationPage() {
           Déjà plus de 12 000 foyers accompagnés · Professionnels certifiés RGE
         </p>
       </div>
+      {showSuccess && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+    <div className="w-full max-w-md rounded-[2rem] bg-white p-8 text-center shadow-2xl animate-[pu-pop_.3s_ease]">
+      
+      <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-violet-600 to-blue-600 text-5xl text-white shadow-xl">
+        ✓
+      </div>
+
+      <h2 className="mt-6 text-3xl font-black text-[#08243a]">
+        Merci 🎉
+      </h2>
+
+      <p className="mt-4 text-lg leading-8 text-slate-600">
+        Votre demande a bien été envoyée.
+        <br />
+        Un conseiller PrimUnion reviendra vers vous rapidement avec vos aides disponibles.
+      </p>
+
+      <button
+        onClick={() => {
+          setShowSuccess(false);
+          setPage?.("home");
+        }}
+        className="mt-8 w-full rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 py-4 text-lg font-black text-white shadow-lg"
+      >
+        Retour à l’accueil
+      </button>
+    </div>
+  </div>
+)}
     </main>
   );
 }
