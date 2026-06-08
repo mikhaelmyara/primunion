@@ -64,12 +64,7 @@ function Navbar({ page, go, menuOpen, setMenuOpen }) {
           <button onClick={() => go("contact")} className={page === "contact" ? "text-violet-300" : ""}>
             Contact
           </button>
-          <button
-            onClick={() => go("admin")}
-            className={page === "admin" ? "text-violet-300" : ""}
-          >
-            Admin
-          </button>
+          
         </div>
 
         <button
@@ -90,7 +85,7 @@ function Navbar({ page, go, menuOpen, setMenuOpen }) {
             <button onClick={() => go("home")}>Accueil</button>
             <button onClick={() => go("simulation")}>Simulation</button>
             <button onClick={() => go("contact")}>Contact</button>
-            <button onClick={() => go("admin")}>Admin</button>
+            
           </div>
         </div>
       )}
@@ -1637,6 +1632,12 @@ function Footer({ go }) {
 
           <div className="flex flex-col gap-3 font-bold text-slate-300">
             <p className="text-sm uppercase tracking-wide text-slate-500">Navigation</p>
+            <button
+  onClick={() => go("admin")}
+  className="text-left text-slate-500 transition hover:text-white"
+>
+  Admin
+</button>
             <button onClick={() => go("home")} className="text-left transition hover:text-white">Accueil</button>
             <button onClick={() => go("simulation")} className="text-left transition hover:text-white">Simulation</button>
             <button onClick={() => go("contact")} className="text-left transition hover:text-white">Contact</button>
