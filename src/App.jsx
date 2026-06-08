@@ -289,8 +289,17 @@ function SimulationPage() {
         { label: "Je ne souhaite pas confier mes revenus", emoji: "🔒" },
       ],
     },
-    { type: "input", key: "city", title: "Votre ville ou code postal ?", placeholder: "Ex : Paris, Lyon, 75001, 69003..." },
-    { type: "counter", key: "household_size", title: "Combien de personnes composent votre foyer ?" },
+    {
+      type: "input",
+      key: "city",
+      title: "Votre code postal ?",
+      placeholder: "Ex : 75001",
+    },
+    {
+      type: "counter",
+      key: "household_size",
+      title: "Combien de personnes composent votre foyer ?",
+    },
     {
       type: "choice",
       key: "tax_income",
@@ -303,10 +312,27 @@ function SimulationPage() {
         { label: "Plus de 46 182 €" },
       ],
     },
-    { type: "contact", key: "contact", title: "Recevez votre estimation personnalisée" },
+    {
+      type: "contact",
+      key: "contact",
+      title: "Recevez votre estimation personnalisée",
+    },
+    {
+      type: "choice",
+      key: "wants_contact",
+      title: "Voulez-vous être contacté par un de nos collaborateurs ?",
+      options: [
+        { label: "Oui", emoji: "📞", desc: "Je choisis une date et une heure" },
+        { label: "Non", emoji: "❌", desc: "Je veux seulement envoyer ma demande" },
+      ],
+    },
+    {
+      type: "appointment",
+      key: "appointment",
+      title: "Choisissez votre date et heure préférées",
+    },
   ];
 
-  // Petits encouragements affichés selon l'avancement
   const encouragements = [
     "C'est parti, ça prend moins de 2 minutes 👍",
     "Parfait, continuons !",
@@ -316,36 +342,84 @@ function SimulationPage() {
     "Dernière ligne droite 🚀",
     "Encore un effort…",
     "Avant-dernière étape !",
-    "Et voilà, votre estimation arrive 🎉",
+    "Votre estimation est prête 🎉",
+    "Dernière question !",
+    "Choisissez votre créneau 📅",
   ];
 
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState("forward");
-  const [data, setData] = useState({ household_size: 1, full_name: "", email: "", phone: "" });
+  const [data, setData] = useState({
+    household_size: 1,
+    full_name: "",
+    email: "",
+    phone: "",
+    preferred_date: "",
+    preferred_time: "",
+  });
+
   const current = steps[step];
+  const selected = data[current.key];
   const progress = Math.round(((step + 1) / steps.length) * 100);
 
+  const isPostalCodeValid = /^[0-9]{5}$/.test(data.city || "");
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email || "");
+  const isPhoneValid = /^(?:(?:\+33|0033)[1-9](?:\d{2}){4}|0[1-9](?:\d{2}){4})$/.test(
+    (data.phone || "").replace(/\s/g, "")
+  );
+
+  const isContactValid =
+    data.full_name.trim().length >= 2 && isEmailValid && isPhoneValid;
+
+  const isAppointmentValid = data.preferred_date && data.preferred_time;
+
+  const canContinue =
+    current.type === "input"
+      ? isPostalCodeValid
+      : current.type === "contact"
+      ? isContactValid
+      : current.type === "appointment"
+      ? isAppointmentValid
+      : true;
+
+  const submitLead = async (finalData = data) => {
+    const { error } = await supabase.from("leads").insert([
+      {
+        ...finalData,
+        household_size: String(finalData.household_size),
+      },
+    ]);
+
+    if (error) {
+      console.error(error);
+      alert("Erreur d'envoi. Vérifie Supabase.");
+      return;
+    }
+
+    alert("Simulation envoyée ✅");
+    setStep(0);
+    setData({
+      household_size: 1,
+      full_name: "",
+      email: "",
+      phone: "",
+      preferred_date: "",
+      preferred_time: "",
+    });
+  };
+
   const next = async () => {
-  if (step < steps.length - 1) {
-    setStep(step + 1);
-    return;
-  }
+    if (!canContinue) return;
 
-  const { error } = await supabase.from("leads").insert([
-    {
-      ...data,
-      household_size: String(data.household_size),
-    },
-  ]);
+    setDirection("forward");
 
-  if (error) {
-    console.error(error);
-    alert("Erreur d'envoi. Vérifie Supabase.");
-    return;
-  }
+    if (step < steps.length - 1) {
+      setStep(step + 1);
+      return;
+    }
 
-  alert("Simulation envoyée ✅");
-};
+    await submitLead();
+  };
 
   const back = () => {
     setDirection("back");
@@ -353,35 +427,33 @@ function SimulationPage() {
   };
 
   const choose = (value) => {
-    setData({ ...data, [current.key]: value });
-    setTimeout(next, 260);
+    const updatedData = { ...data, [current.key]: value };
+    setData(updatedData);
+    setDirection("forward");
+
+    if (current.key === "wants_contact" && value === "Non") {
+      setTimeout(() => submitLead(updatedData), 250);
+      return;
+    }
+
+    setTimeout(() => {
+      if (step < steps.length - 1) setStep(step + 1);
+    }, 250);
   };
-
-  const selected = data[current.key];
-
-  const canContinue =
-    current.type === "input"
-      ? data[current.key]?.trim()?.length > 1
-      : current.type === "contact"
-      ? data.full_name && data.email && data.phone
-      : true;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#081d33] via-[#132b5c] to-[#140b2d] px-4 py-10">
-      {/* Halos d'ambiance */}
       <div className="pointer-events-none absolute -left-32 top-10 h-80 w-80 rounded-full bg-violet-500/25 blur-3xl" />
       <div className="pointer-events-none absolute -right-32 bottom-10 h-80 w-80 rounded-full bg-blue-500/25 blur-3xl" />
 
       <style>{`
         @keyframes pu-slide-in-right { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes pu-slide-in-left  { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes pu-pop { 0% { transform: scale(.96); } 60% { transform: scale(1.02); } 100% { transform: scale(1); } }
+        @keyframes pu-slide-in-left { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: translateX(0); } }
         .pu-step-forward { animation: pu-slide-in-right .35s cubic-bezier(.22,1,.36,1) both; }
-        .pu-step-back    { animation: pu-slide-in-left .35s cubic-bezier(.22,1,.36,1) both; }
+        .pu-step-back { animation: pu-slide-in-left .35s cubic-bezier(.22,1,.36,1) both; }
       `}</style>
 
       <div className="relative mx-auto max-w-3xl">
-        {/* Bandeau de confiance */}
         <div className="mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-bold text-violet-100/90">
           <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-violet-300" /> 100% gratuit</span>
           <span className="flex items-center gap-2"><CheckCircle size={16} className="text-violet-300" /> Sans engagement</span>
@@ -389,12 +461,14 @@ function SimulationPage() {
         </div>
 
         <div className="rounded-[2rem] bg-white p-6 shadow-2xl ring-1 ring-black/5 md:rounded-[2.5rem] md:p-10">
-          {/* En-tête + progression */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 text-base font-black text-white">P</div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 text-base font-black text-white">
+                P
+              </div>
               <span className="text-lg font-black text-[#08243a]">PrimUnion</span>
             </div>
+
             <span className="rounded-full bg-violet-50 px-4 py-1.5 text-sm font-black text-violet-700">
               {progress}%
             </span>
@@ -402,7 +476,7 @@ function SimulationPage() {
 
           <div className="mt-5 h-2.5 overflow-hidden rounded-full bg-slate-100">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-violet-600 to-blue-600 transition-all duration-500 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-violet-600 to-blue-600 transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -412,12 +486,17 @@ function SimulationPage() {
             <span className="text-slate-400">Étape {step + 1} / {steps.length}</span>
           </div>
 
-          {/* Contenu de l'étape (animé) */}
           <div key={step} className={direction === "forward" ? "pu-step-forward" : "pu-step-back"}>
             <h2 className="mt-9 text-2xl font-black leading-tight text-[#08243a] md:text-3xl">
               {current.title}
             </h2>
-            {current.subtitle && <p className="mt-2 text-base font-bold text-slate-400">{current.subtitle}</p>}
+
+            {current.subtitle && (
+              <p className="mt-2 text-base font-bold text-slate-400">
+                {current.subtitle}
+              </p>
+            )}
+
             {current.hint && (
               <p className="mt-3 flex items-start gap-2 rounded-2xl bg-blue-50 p-3 text-sm font-semibold text-blue-700">
                 <span>💡</span> {current.hint}
@@ -428,31 +507,37 @@ function SimulationPage() {
               <div className={`mt-7 grid gap-4 ${current.options.length > 3 ? "sm:grid-cols-2" : "md:grid-cols-2"}`}>
                 {current.options.map((option) => {
                   const isSel = selected === option.label;
+
                   return (
                     <button
                       key={option.label}
                       onClick={() => choose(option.label)}
-                      style={{ animation: "pu-pop .25s ease both" }}
-                      className={`group relative flex items-center gap-4 overflow-hidden rounded-2xl border-2 p-5 text-left transition-all duration-200 ${
+                      className={`group relative flex items-center gap-4 rounded-2xl border-2 p-5 text-left transition-all ${
                         isSel
                           ? "border-violet-600 bg-violet-50 shadow-lg shadow-violet-200/60"
                           : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-violet-400 hover:shadow-md"
                       }`}
                     >
                       {option.emoji && (
-                        <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-3xl transition ${isSel ? "bg-white" : "bg-slate-50 group-hover:bg-violet-100"}`}>
+                        <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-3xl ${isSel ? "bg-white" : "bg-slate-50 group-hover:bg-violet-100"}`}>
                           {option.emoji}
                         </span>
                       )}
+
                       <span className="flex-1">
-                        <span className="block text-lg font-black text-[#08243a]">{option.label}</span>
-                        {option.desc && <span className="mt-0.5 block text-sm font-semibold text-slate-400">{option.desc}</span>}
+                        <span className="block text-lg font-black text-[#08243a]">
+                          {option.label}
+                        </span>
+                        {option.desc && (
+                          <span className="mt-0.5 block text-sm font-semibold text-slate-400">
+                            {option.desc}
+                          </span>
+                        )}
                       </span>
-                      <span
-                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition ${
-                          isSel ? "border-violet-600 bg-violet-600 text-white" : "border-slate-300 text-transparent group-hover:border-violet-400"
-                        }`}
-                      >
+
+                      <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 ${
+                        isSel ? "border-violet-600 bg-violet-600 text-white" : "border-slate-300 text-transparent"
+                      }`}>
                         <CheckCircle size={16} />
                       </span>
                     </button>
@@ -464,16 +549,30 @@ function SimulationPage() {
             {current.type === "input" && (
               <div className="mt-7">
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-2xl">📍</span>
+                  <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-2xl">
+                    📍
+                  </span>
+
                   <input
                     value={data[current.key] || ""}
-                    onChange={(e) => setData({ ...data, [current.key]: e.target.value })}
-                    onKeyDown={(e) => e.key === "Enter" && canContinue && next()}
+                    onChange={(e) =>
+                      setData({ ...data, [current.key]: e.target.value.replace(/\D/g, "").slice(0, 5) })
+                    }
                     placeholder={current.placeholder}
-                    autoFocus
-                    className="w-full rounded-2xl border-2 border-slate-200 py-5 pl-14 pr-5 text-lg font-bold text-[#08243a] outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                    className={`w-full rounded-3xl border-2 p-5 pl-14 text-xl font-bold outline-none ${
+                      isPostalCodeValid || !data[current.key]
+                        ? "border-slate-200 focus:border-violet-500"
+                        : "border-red-500"
+                    }`}
                   />
                 </div>
+
+                {data[current.key] && !isPostalCodeValid && (
+                  <p className="mt-3 font-bold text-red-500">
+                    Entre un code postal français valide à 5 chiffres.
+                  </p>
+                )}
+
                 <ContinueButton disabled={!canContinue} onClick={next} />
               </div>
             )}
@@ -482,26 +581,40 @@ function SimulationPage() {
               <div className="mt-9">
                 <div className="flex items-center justify-center gap-6">
                   <button
-                    onClick={() => setData({ ...data, household_size: Math.max(1, data.household_size - 1) })}
-                    className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-slate-200 text-3xl font-black text-slate-500 transition hover:border-violet-400 hover:text-violet-600 active:scale-95"
+                    onClick={() =>
+                      setData({
+                        ...data,
+                        household_size: Math.max(1, data.household_size - 1),
+                      })
+                    }
+                    className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-slate-200 text-3xl font-black text-slate-500"
                   >
                     −
                   </button>
+
                   <div className="text-center">
                     <div className="flex h-28 w-28 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-600 to-blue-600 text-6xl font-black text-white shadow-lg shadow-violet-200">
                       {data.household_size}
                     </div>
+
                     <p className="mt-3 font-bold text-slate-400">
                       personne{data.household_size > 1 ? "s" : ""}
                     </p>
                   </div>
+
                   <button
-                    onClick={() => setData({ ...data, household_size: data.household_size + 1 })}
-                    className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-slate-200 text-3xl font-black text-slate-500 transition hover:border-violet-400 hover:text-violet-600 active:scale-95"
+                    onClick={() =>
+                      setData({
+                        ...data,
+                        household_size: data.household_size + 1,
+                      })
+                    }
+                    className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-slate-200 text-3xl font-black text-slate-500"
                   >
                     +
                   </button>
                 </div>
+
                 <ContinueButton disabled={false} onClick={next} />
               </div>
             )}
@@ -512,43 +625,108 @@ function SimulationPage() {
                   <span className="text-4xl">🎉</span>
                   <div>
                     <p className="text-lg font-black">Votre estimation est prête !</p>
-                    <p className="text-sm font-semibold text-violet-100">Indiquez où l'envoyer, c'est gratuit et sans engagement.</p>
+                    <p className="text-sm font-semibold text-violet-100">
+                      Indiquez où l'envoyer, c'est gratuit et sans engagement.
+                    </p>
                   </div>
                 </div>
+
                 <div className="space-y-4">
-                  <FieldInput value={data.full_name} onChange={(v) => setData({ ...data, full_name: v })} placeholder="Nom et prénom" icon="👤" />
-                  <FieldInput value={data.email} onChange={(v) => setData({ ...data, email: v })} placeholder="Adresse email" icon="✉️" type="email" />
-                  <FieldInput value={data.phone} onChange={(v) => setData({ ...data, phone: v })} placeholder="Numéro de téléphone" icon="📞" type="tel" />
+                  <FieldInput
+                    value={data.full_name}
+                    onChange={(v) => setData({ ...data, full_name: v })}
+                    placeholder="Nom et prénom *"
+                    icon="👤"
+                  />
+
+                  <FieldInput
+                    value={data.email}
+                    onChange={(v) => setData({ ...data, email: v })}
+                    placeholder="Adresse email *"
+                    icon="✉️"
+                    type="email"
+                    error={data.email && !isEmailValid ? "Email invalide." : ""}
+                  />
+
+                  <FieldInput
+                    value={data.phone}
+                    onChange={(v) => setData({ ...data, phone: v })}
+                    placeholder="Numéro de téléphone *"
+                    icon="📞"
+                    type="tel"
+                    error={
+                      data.phone && !isPhoneValid
+                        ? "Numéro français invalide. Exemple : 0612345678"
+                        : ""
+                    }
+                  />
                 </div>
+
                 <button
                   disabled={!canContinue}
                   onClick={next}
                   className={`mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-5 text-lg font-black transition ${
                     canContinue
-                      ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg shadow-violet-200 hover:brightness-110 active:scale-[.99]"
+                      ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg shadow-violet-200"
                       : "cursor-not-allowed bg-slate-200 text-slate-400"
                   }`}
                 >
                   Recevoir mon estimation <ArrowRight size={20} />
                 </button>
+
                 <p className="mt-4 flex items-center justify-center gap-2 text-sm font-bold text-slate-400">
                   <ShieldCheck size={16} /> Données protégées · Aucun engagement
                 </p>
               </div>
             )}
+
+            {current.type === "appointment" && (
+              <div className="mt-7 space-y-4">
+                <input
+                  type="date"
+                  value={data.preferred_date}
+                  onChange={(e) =>
+                    setData({ ...data, preferred_date: e.target.value })
+                  }
+                  className="w-full rounded-2xl border-2 border-slate-200 p-5 text-lg font-bold text-[#08243a] outline-none focus:border-violet-500"
+                />
+
+                <input
+                  type="time"
+                  value={data.preferred_time}
+                  onChange={(e) =>
+                    setData({ ...data, preferred_time: e.target.value })
+                  }
+                  className="w-full rounded-2xl border-2 border-slate-200 p-5 text-lg font-bold text-[#08243a] outline-none focus:border-violet-500"
+                />
+
+                <button
+                  disabled={!canContinue}
+                  onClick={() => submitLead()}
+                  className={`flex w-full items-center justify-center gap-2 rounded-2xl py-5 text-lg font-black transition ${
+                    canContinue
+                      ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg shadow-violet-200"
+                      : "cursor-not-allowed bg-slate-200 text-slate-400"
+                  }`}
+                >
+                  Valider ma demande <ArrowRight size={20} />
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Navigation retour */}
           {step > 0 && (
             <div className="mt-8 border-t border-slate-100 pt-5">
-              <button onClick={back} className="text-sm font-black text-slate-400 transition hover:text-violet-600">
+              <button
+                onClick={back}
+                className="text-sm font-black text-slate-400 transition hover:text-violet-600"
+              >
                 ← Revenir à l'étape précédente
               </button>
             </div>
           )}
         </div>
 
-        {/* Réassurance sous la carte */}
         <p className="mt-6 text-center text-sm font-semibold text-violet-100/70">
           Déjà plus de 12 000 foyers accompagnés · Professionnels certifiés RGE
         </p>
@@ -573,17 +751,32 @@ function ContinueButton({ disabled, onClick }) {
   );
 }
 
-function FieldInput({ value, onChange, placeholder, icon, type = "text" }) {
+function FieldInput({ value, onChange, placeholder, icon, type = "text", error = "" }) {
   return (
-    <div className="relative">
-      <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-xl">{icon}</span>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full rounded-2xl border-2 border-slate-200 py-4 pl-14 pr-5 text-base font-bold text-[#08243a] outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
-      />
+    <div>
+      <div className="relative">
+        <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-xl">
+          {icon}
+        </span>
+
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={`w-full rounded-2xl border-2 py-4 pl-14 pr-5 text-base font-bold text-[#08243a] outline-none transition ${
+            error
+              ? "border-red-500 focus:border-red-500"
+              : "border-slate-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+          }`}
+        />
+      </div>
+
+      {error && (
+        <p className="mt-2 font-bold text-red-500">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -1032,7 +1225,7 @@ function Footer({ go }) {
         </div>
 
         <div className="mt-10 border-t border-white/10 pt-6 text-center text-sm text-slate-500">
-          © {new Date().getFullYear()} PrimUnion — Tous droits réservés.
+          © {new Date().getFullYear()} © 2018 – 2026 PrimUnion. Tous droits réservés.
         </div>
       </div>
     </footer>
