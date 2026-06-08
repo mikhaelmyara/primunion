@@ -1328,9 +1328,31 @@ function PrivacyPage({ go }) {
     </LegalLayout>
   );
 }
+
 function AdminPage() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+
+  const loginAdmin = async (e) => {
+    e.preventDefault();
+    setLoginError("");
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setLoginError("Email ou mot de passe incorrect.");
+      return;
+    }
+
+    setSession(data.session);
+  };
 
   const loadLeads = async () => {
     setLoading(true);
@@ -1358,7 +1380,9 @@ function AdminPage() {
         internal_note: lead.internal_note,
         reminder_date: lead.reminder_date || null,
         last_called_at:
-          lead.call_status === "appele" ? new Date().toISOString() : lead.last_called_at,
+          lead.call_status === "appele"
+            ? new Date().toISOString()
+            : lead.last_called_at,
       })
       .eq("id", lead.id);
 
@@ -1374,15 +1398,34 @@ function AdminPage() {
 
   const changeLead = (id, field, value) => {
     setLeads((prev) =>
-      prev.map((lead) =>
-        lead.id === id ? { ...lead, [field]: value } : lead
-      )
+      prev.map((lead) => (lead.id === id ? { ...lead, [field]: value } : lead))
     );
   };
 
- useEffect(() => {
-  loadLeads();
-}, []);
+  useEffect(() => {
+    const initAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+    };
+
+    initAuth();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (session) {
+      loadLeads();
+    }
+  }, [session]);
 
   const statusLabels = {
     a_appeler: "À appeler",
@@ -1390,19 +1433,71 @@ function AdminPage() {
     injoignable: "Injoignable",
     rappel_prevu: "Rappel prévu",
     termine: "Terminé",
+    ne_veut_pas_etre_contacte: "Ne veut pas être contacté",
   };
+
+  if (!session) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-[#081d33] via-[#132b5c] to-[#140b2d] px-5 py-20">
+        <div className="mx-auto max-w-md rounded-[2rem] bg-white p-8 shadow-2xl">
+          <h1 className="text-3xl font-black text-[#08243a]">
+            Connexion admin
+          </h1>
+
+          <p className="mt-3 text-slate-600">
+            Connecte-toi pour accéder aux leads PrimUnion.
+          </p>
+
+          <form onSubmit={loginAdmin} className="mt-8 space-y-4">
+            <input
+              type="email"
+              placeholder="Email admin"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-2xl border-2 border-slate-200 p-4 font-bold outline-none focus:border-violet-500"
+            />
+
+            <input
+              type="password"
+              placeholder="Mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-2xl border-2 border-slate-200 p-4 font-bold outline-none focus:border-violet-500"
+            />
+
+            {loginError && (
+              <p className="font-bold text-red-500">{loginError}</p>
+            )}
+
+            <button className="w-full rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 py-4 font-black text-white">
+              Se connecter
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#f7f8ff] px-5 py-10">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-10">
-          <p className="font-black text-violet-700">CRM PrimUnion</p>
-          <h1 className="mt-2 text-4xl font-black text-[#08243a]">
-            Suivi des leads
-          </h1>
-          <p className="mt-3 text-slate-600">
-            Appels, notes internes, rappels et suivi client.
-          </p>
+        <div className="mb-10 flex flex-col justify-between gap-5 md:flex-row md:items-center">
+          <div>
+            <p className="font-black text-violet-700">CRM PrimUnion</p>
+            <h1 className="mt-2 text-4xl font-black text-[#08243a]">
+              Suivi des leads
+            </h1>
+            <p className="mt-3 text-slate-600">
+              Appels, notes internes, rappels et suivi client.
+            </p>
+          </div>
+
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="rounded-2xl bg-slate-900 px-6 py-3 font-black text-white"
+          >
+            Se déconnecter
+          </button>
         </div>
 
         {loading ? (
@@ -1437,8 +1532,7 @@ function AdminPage() {
                     </div>
 
                     <p className="mt-2 text-sm font-bold text-slate-400">
-                      Créé le{" "}
-                      {new Date(lead.created_at).toLocaleDateString("fr-FR")} à{" "}
+                      Créé le {new Date(lead.created_at).toLocaleDateString("fr-FR")} à{" "}
                       {new Date(lead.created_at).toLocaleTimeString("fr-FR", {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -1474,6 +1568,9 @@ function AdminPage() {
                       <option value="injoignable">Injoignable</option>
                       <option value="rappel_prevu">Rappel prévu</option>
                       <option value="termine">Terminé</option>
+                      <option value="ne_veut_pas_etre_contacte">
+                        Ne veut pas être contacté
+                      </option>
                     </select>
 
                     <input
@@ -1553,7 +1650,7 @@ function Footer({ go }) {
         </div>
 
         <div className="mt-10 border-t border-white/10 pt-6 text-center text-sm text-slate-500">
-          © {new Date().getFullYear()} © 2018 – 2026 PrimUnion. Tous droits réservés.
+        © 2018 – 2026 PrimUnion. Tous droits réservés.
         </div>
       </div>
     </footer>
