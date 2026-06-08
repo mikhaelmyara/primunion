@@ -1,5 +1,5 @@
 import { supabase } from "./lib/supabase";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Menu,
   X,
@@ -34,6 +34,7 @@ export default function App() {
       {page === "contact" && <ContactPage />}
       {page === "legal" && <LegalPage go={go} />}
       {page === "privacy" && <PrivacyPage go={go} />}
+      {page === "admin" && <AdminPage />}
 
       <Footer go={go} />
     </div>
@@ -52,6 +53,7 @@ function Navbar({ page, go, menuOpen, setMenuOpen }) {
         </button>
 
         <div className="hidden items-center gap-8 font-semibold lg:flex">
+          
           <button onClick={() => go("home")} className={page === "home" ? "text-violet-300" : ""}>
             Accueil
           </button>
@@ -60,6 +62,12 @@ function Navbar({ page, go, menuOpen, setMenuOpen }) {
           </button>
           <button onClick={() => go("contact")} className={page === "contact" ? "text-violet-300" : ""}>
             Contact
+          </button>
+          <button
+            onClick={() => go("admin")}
+            className={page === "admin" ? "text-violet-300" : ""}
+          >
+            Admin
           </button>
         </div>
 
@@ -81,6 +89,7 @@ function Navbar({ page, go, menuOpen, setMenuOpen }) {
             <button onClick={() => go("home")}>Accueil</button>
             <button onClick={() => go("simulation")}>Simulation</button>
             <button onClick={() => go("contact")}>Contact</button>
+            <button onClick={() => go("admin")}>Admin</button>
           </div>
         </div>
       )}
@@ -1227,7 +1236,203 @@ function PrivacyPage({ go }) {
     </LegalLayout>
   );
 }
+function AdminPage() {
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  const loadLeads = async () => {
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from("leads")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      alert("Erreur chargement leads");
+    } else {
+      setLeads(data || []);
+    }
+
+    setLoading(false);
+  };
+
+  const updateLead = async (lead) => {
+    const { error } = await supabase
+      .from("leads")
+      .update({
+        call_status: lead.call_status,
+        internal_note: lead.internal_note,
+        reminder_date: lead.reminder_date || null,
+        last_called_at:
+          lead.call_status === "appele" ? new Date().toISOString() : lead.last_called_at,
+      })
+      .eq("id", lead.id);
+
+    if (error) {
+      console.error(error);
+      alert("Erreur sauvegarde");
+      return;
+    }
+
+    alert("Lead sauvegardé ✅");
+    loadLeads();
+  };
+
+  const changeLead = (id, field, value) => {
+    setLeads((prev) =>
+      prev.map((lead) =>
+        lead.id === id ? { ...lead, [field]: value } : lead
+      )
+    );
+  };
+
+ useEffect(() => {
+  loadLeads();
+}, []);
+
+  const statusLabels = {
+    a_appeler: "À appeler",
+    appele: "Appelé",
+    injoignable: "Injoignable",
+    rappel_prevu: "Rappel prévu",
+    termine: "Terminé",
+  };
+
+  return (
+    <main className="min-h-screen bg-[#f7f8ff] px-5 py-10">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-10">
+          <p className="font-black text-violet-700">CRM PrimUnion</p>
+          <h1 className="mt-2 text-4xl font-black text-[#08243a]">
+            Suivi des leads
+          </h1>
+          <p className="mt-3 text-slate-600">
+            Appels, notes internes, rappels et suivi client.
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="rounded-3xl bg-white p-10 text-center font-black shadow">
+            Chargement des leads...
+          </div>
+        ) : leads.length === 0 ? (
+          <div className="rounded-3xl bg-white p-10 text-center font-black shadow">
+            Aucun lead pour le moment.
+          </div>
+        ) : (
+          <div className="grid gap-6">
+            {leads.map((lead) => (
+              <div
+                key={lead.id}
+                className="rounded-[2rem] bg-white p-6 shadow-lg ring-1 ring-slate-100"
+              >
+                <div className="flex flex-col justify-between gap-5 lg:flex-row">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h2 className="text-2xl font-black text-[#08243a]">
+                        {lead.full_name || "Sans nom"}
+                      </h2>
+
+                      <span className="rounded-full bg-violet-100 px-4 py-1 text-sm font-black text-violet-700">
+                        {lead.eligibility_category || "non classé"}
+                      </span>
+
+                      <span className="rounded-full bg-slate-100 px-4 py-1 text-sm font-black text-slate-600">
+                        {statusLabels[lead.call_status] || "À appeler"}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-sm font-bold text-slate-400">
+                      Créé le{" "}
+                      {new Date(lead.created_at).toLocaleDateString("fr-FR")} à{" "}
+                      {new Date(lead.created_at).toLocaleTimeString("fr-FR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+
+                    <div className="mt-5 grid gap-3 text-sm font-semibold text-slate-600 md:grid-cols-2 lg:grid-cols-3">
+                      <p>📞 {lead.phone || "-"}</p>
+                      <p>✉️ {lead.email || "-"}</p>
+                      <p>📍 CP : {lead.city || "-"}</p>
+                      <p>👥 Foyer : {lead.household_size || "-"}</p>
+                      <p>💶 Revenus : {lead.tax_income || "-"}</p>
+                      <p>🏠 Statut : {lead.owner_status || "-"}</p>
+                      <p>🏡 Logement : {lead.housing_type || "-"}</p>
+                      <p>🔥 Chauffage : {lead.heating_type || "-"}</p>
+                      <p>📄 Facture : {lead.heating_bill || "-"}</p>
+                      <p>📞 Contact souhaité : {lead.wants_contact || "-"}</p>
+                      <p>📅 Date : {lead.preferred_date || "-"}</p>
+                      <p>⏰ Heure : {lead.preferred_time || "-"}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3 lg:w-72">
+                    <select
+                      value={lead.call_status || "a_appeler"}
+                      onChange={(e) =>
+                        changeLead(lead.id, "call_status", e.target.value)
+                      }
+                      className="rounded-2xl border-2 border-slate-200 p-3 font-bold outline-none focus:border-violet-500"
+                    >
+                      <option value="a_appeler">À appeler</option>
+                      <option value="appele">Appelé</option>
+                      <option value="injoignable">Injoignable</option>
+                      <option value="rappel_prevu">Rappel prévu</option>
+                      <option value="termine">Terminé</option>
+                    </select>
+
+                    <input
+                      type="date"
+                      value={lead.reminder_date || ""}
+                      onChange={(e) =>
+                        changeLead(lead.id, "reminder_date", e.target.value)
+                      }
+                      className="rounded-2xl border-2 border-slate-200 p-3 font-bold outline-none focus:border-violet-500"
+                    />
+
+                    <button
+                      onClick={() =>
+                        changeLead(lead.id, "call_status", "appele")
+                      }
+                      className="rounded-2xl bg-slate-900 py-3 font-black text-white"
+                    >
+                      Marquer appelé
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <label className="font-black text-slate-700">
+                    Notes internes
+                  </label>
+
+                  <textarea
+                    value={lead.internal_note || ""}
+                    onChange={(e) =>
+                      changeLead(lead.id, "internal_note", e.target.value)
+                    }
+                    placeholder="Ex : client intéressé, rappeler demain, demande devis, hésitation..."
+                    className="mt-3 min-h-28 w-full rounded-2xl border-2 border-slate-200 p-4 font-semibold outline-none focus:border-violet-500"
+                  />
+
+                  <button
+                    onClick={() => updateLead(lead)}
+                    className="mt-4 rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 px-8 py-4 font-black text-white shadow-lg"
+                  >
+                    Sauvegarder le suivi
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
 function Footer({ go }) {
   return (
     <footer className="bg-[#081d33] px-5 py-12 text-white">
