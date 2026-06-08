@@ -30,7 +30,7 @@ export default function App() {
       <Navbar page={page} go={go} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
       {page === "home" && <HomePage go={go} />}
-      {page === "simulation" && <SimulationPage />}
+      {page === "simulation" && <SimulationPage go={go} />}
       {page === "admin" && <AdminPage />}
       {page === "contact" && <ContactPage />}
       {page === "legal" && <LegalPage go={go} />}
@@ -317,7 +317,7 @@ function getEligibilityCategory({ city, household_size, tax_income }) {
   };
 }
 
-function SimulationPage() {
+function SimulationPage({ go }) {
   const steps = [
     {
       type: "choice",
@@ -848,9 +848,12 @@ const submitLead = async (finalData = data) => {
 
       <button
         onClick={() => {
-          setShowSuccess(false);
-          setShowSuccess(false);
-        }}
+
+  setShowSuccess(false);
+
+  go("home");
+
+}}
         className="mt-8 w-full rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 py-4 text-lg font-black text-white shadow-lg"
       >
         Retour à l’accueil
