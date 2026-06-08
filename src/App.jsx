@@ -31,10 +31,11 @@ export default function App() {
 
       {page === "home" && <HomePage go={go} />}
       {page === "simulation" && <SimulationPage />}
+      {page === "admin" && <AdminPage />}
       {page === "contact" && <ContactPage />}
       {page === "legal" && <LegalPage go={go} />}
       {page === "privacy" && <PrivacyPage go={go} />}
-      {page === "admin" && <AdminPage />}
+      
 
       <Footer go={go} />
     </div>
@@ -245,6 +246,82 @@ function MiniSimulationCard({ go }) {
   );
 }
 
+function isIleDeFrancePostalCode(postalCode) {
+  const code = String(postalCode || "").slice(0, 2);
+
+  return ["75", "77", "78", "91", "92", "93", "94", "95"].includes(code);
+}
+
+function getEligibilityCategory({ city, household_size, tax_income }) {
+  const household = Number(household_size || 1);
+  const isIdf = isIleDeFrancePostalCode(city);
+
+  const bareme = {
+    idf: {
+      veryModest: [23768, 34884, 41893, 48914, 55961],
+      modest: [28933, 42463, 51000, 59549, 68123],
+      intermediate: [40404, 59394, 71060, 83637, 95758],
+      extra: {
+        veryModest: 7038,
+        modest: 8568,
+        intermediate: 12122,
+      },
+    },
+    other: {
+      veryModest: [17173, 25115, 30206, 35285, 40388],
+      modest: [22015, 32197, 38719, 45234, 51775],
+      intermediate: [30844, 45340, 54592, 63844, 73098],
+      extra: {
+        veryModest: 5094,
+        modest: 6525,
+        intermediate: 9254,
+      },
+    },
+  };
+
+  const zone = isIdf ? bareme.idf : bareme.other;
+
+  const getLimit = (type) => {
+    if (household <= 5) return zone[type][household - 1];
+    return zone[type][4] + (household - 5) * zone.extra[type];
+  };
+
+  const ranges = {
+    "Jusqu'à 25 714 €": 25714,
+    "De 25 714 € à 32 985 €": 32985,
+    "De 32 985 € à 46 182 €": 46182,
+    "Plus de 46 182 €": 999999,
+  };
+
+  const income = ranges[tax_income] || 999999;
+
+  if (income <= getLimit("veryModest")) {
+    return {
+      eligibility_category: "tres_modeste",
+      lead_color: "purple",
+    };
+  }
+
+  if (income <= getLimit("modest")) {
+    return {
+      eligibility_category: "modeste",
+      lead_color: "blue",
+    };
+  }
+
+  if (income <= getLimit("intermediate")) {
+    return {
+      eligibility_category: "intermediaire",
+      lead_color: "yellow",
+    };
+  }
+
+  return {
+    eligibility_category: "aise",
+    lead_color: "gray",
+  };
+}
+
 function SimulationPage() {
   const steps = [
     {
@@ -358,6 +435,7 @@ function SimulationPage() {
 
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState("forward");
+  const [showSuccess, setShowSuccess] = useState(false);
   const [data, setData] = useState({
     household_size: 1,
     full_name: "",
@@ -391,32 +469,46 @@ function SimulationPage() {
       ? isAppointmentValid
       : true;
 
-  const submitLead = async (finalData = data) => {
-    const { error } = await supabase.from("leads").insert([
-      {
-        ...finalData,
-        household_size: String(finalData.household_size),
-      },
-    ]);
+const submitLead = async (finalData = data) => {
+  const eligibility = getEligibilityCategory(finalData);
 
-    if (error) {
-      console.error(error);
-      alert("Erreur d'envoi. Vérifie Supabase.");
-      return;
-    }
-
-    const [showSuccess, setShowSuccess] = useState(false);
-    setStep(0);
-    window.scrollTo(0, 0);
-    setData({
-      household_size: 1,
-      full_name: "",
-      email: "",
-      phone: "",
-      preferred_date: "",
-      preferred_time: "",
-    });
+  const finalLead = {
+    ...finalData,
+    call_status:
+      finalData.wants_contact === "Non"
+        ? "ne_veut_pas_etre_contacte"
+        : "a_appeler",
   };
+
+  const { error } = await supabase.from("leads").insert([
+    {
+      ...finalLead,
+      ...eligibility,
+      household_size: String(finalData.household_size),
+    },
+  ]);
+
+  if (error) {
+    console.error(error);
+    alert("Erreur d'envoi. Vérifie Supabase.");
+    return;
+  }
+
+  setShowSuccess(true);
+
+  setStep(0);
+
+  window.scrollTo(0, 0);
+
+  setData({
+    household_size: 1,
+    full_name: "",
+    email: "",
+    phone: "",
+    preferred_date: "",
+    preferred_time: "",
+  });
+};
 
   const next = async () => {
     if (!canContinue) return;
@@ -762,7 +854,7 @@ function SimulationPage() {
       <button
         onClick={() => {
           setShowSuccess(false);
-          setPage?.("home");
+          setShowSuccess(false);
         }}
         className="mt-8 w-full rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 py-4 text-lg font-black text-white shadow-lg"
       >
