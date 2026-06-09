@@ -1740,11 +1740,13 @@ function LeadDetailsPage({ lead, onBack, onChange, onSave, statusLabels }) {
               </label>
 
               <input
-                type="date"
-                value={lead.reminder_date || ""}
-                onChange={(e) => onChange(lead.id, "reminder_date", e.target.value)}
-                className="mt-3 w-full rounded-2xl border-2 border-slate-200 p-4 font-bold outline-none focus:border-violet-500"
-              />
+  type="date"
+  value={data.preferred_date}
+  onChange={(e) =>
+    setData({ ...data, preferred_date: e.target.value })
+  }
+  className="block w-full min-w-0 rounded-2xl border-2 border-slate-200 bg-white p-4 text-base font-bold text-[#08243a] outline-none focus:border-violet-500 sm:p-5 sm:text-lg"
+/>
             </div>
           </div>
 
