@@ -467,12 +467,14 @@ const submitLead = async (finalData = data) => {
   const eligibility = getEligibilityCategory(finalData);
 
   const finalLead = {
-    ...finalData,
-    call_status:
-      finalData.wants_contact === "Non"
-        ? "ne_veut_pas_etre_contacte"
-        : "a_appeler",
-  };
+  ...finalData,
+  preferred_date: finalData.preferred_date || null,
+  preferred_time: finalData.preferred_time || null,
+  call_status:
+    finalData.wants_contact === "Non"
+      ? "ne_veut_pas_etre_contacte"
+      : "a_appeler",
+};
 
   const { error } = await supabase.from("leads").insert([
     {
