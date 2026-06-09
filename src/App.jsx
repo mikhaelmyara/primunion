@@ -1436,8 +1436,6 @@ function AdminPage() {
       alert("Erreur sauvegarde");
       return;
     }
-
-    alert("Lead sauvegardé ✅");
     loadLeads();
   };
 
