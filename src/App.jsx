@@ -1743,7 +1743,7 @@ function LeadDetailsPage({ lead, onBack, onChange, onSave, statusLabels, associa
           ← Retour aux leads
         </button>
 
-        <div className="rounded-[2rem] bg-white p-8 shadow-xl">
+        <div className="rounded-[2rem] bg-white p-5 shadow-xl">
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-start">
             <div>
               <p className="font-black text-violet-700">Fiche lead</p>
@@ -1768,7 +1768,7 @@ function LeadDetailsPage({ lead, onBack, onChange, onSave, statusLabels, associa
             </button>
           </div>
 
-          <div className="mt-8 grid gap-5 md:grid-cols-2">
+          <div className="mt-6 grid gap-3 text-sm md:grid-cols-3">
             <InfoBox label="Téléphone" value={lead.phone} />
             <InfoBox label="Email" value={lead.email} />
             <InfoBox label="Code postal" value={lead.city} />
@@ -1783,7 +1783,7 @@ function LeadDetailsPage({ lead, onBack, onChange, onSave, statusLabels, associa
             <InfoBox label="Heure préférée" value={lead.preferred_time} />
           </div>
 
-          <div className="mt-8 grid gap-5 md:grid-cols-2">
+          <div className="mt-6 grid gap-3 text-sm md:grid-cols-3">
   <div>
     <label className="font-black text-[#08243a]">
       Assigné à
@@ -1858,11 +1858,11 @@ function LeadDetailsPage({ lead, onBack, onChange, onSave, statusLabels, associa
 
 function InfoBox({ label, value }) {
   return (
-    <div className="rounded-2xl bg-slate-50 p-5">
-      <p className="text-sm font-black uppercase tracking-wide text-slate-400">
+    <div className="rounded-xl bg-slate-50 p-3">
+      <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">
         {label}
       </p>
-      <p className="mt-2 text-lg font-black text-[#08243a]">
+      <p className="mt-1 break-words text-sm font-bold text-[#08243a]">
         {value || "-"}
       </p>
     </div>
