@@ -106,7 +106,7 @@ function HomePage({ go }) {
               Jusqu’à 17 000€ de primes gouvernementales
             </div>
 
-            <h1 className="text-5xl font-black leading-tight md:text-6xl">
+            <h1 className="text-4xl font-black leading-tight sm:text-5xl md:text-6xl">
               Bénéficiez d'une
               <br />
               <span className="bg-gradient-to-r from-violet-300 to-blue-300 bg-clip-text text-transparent">
@@ -121,14 +121,14 @@ function HomePage({ go }) {
               <p>✅ Professionnels certifiés RGE</p>
             </div>
 
-            <div className="mt-10 grid grid-cols-3 gap-4">
+            <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4">
               {[
-                ["17 000€", "Aides max."],
-                ["20 sec", "Simulation"],
-                ["100%", "Gratuit"],
-              ].map(([big, small]) => (
-                <div key={big} className="rounded-2xl bg-white/10 p-5 text-center backdrop-blur">
-                  <p className="text-3xl font-black">{big}</p>
+  ["17 000€", "Aides max."],
+  ["2 min", "Simulation"],
+  ["100%", "Gratuit"],
+].map(([big, small]) => (
+                <div key={big} className="min-w-0 rounded-2xl bg-white/10 p-3 text-center backdrop-blur sm:p-5">
+                  <p className="break-words text-2xl font-black leading-tight sm:text-3xl">{big}</p>
                   <p className="text-sm text-slate-300">{small}</p>
                 </div>
               ))}
@@ -549,15 +549,14 @@ const submitLead = async (finalData = data) => {
         .pu-step-back { animation: pu-slide-in-left .35s cubic-bezier(.22,1,.36,1) both; }
       `}</style>
 
-      <div className="relative mx-auto max-w-3xl">
+      <div className="relative mx-auto w-full max-w-3xl">
         <div className="mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-bold text-violet-100/90">
           <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-violet-300" /> 100% gratuit</span>
           <span className="flex items-center gap-2"><CheckCircle size={16} className="text-violet-300" /> Sans engagement</span>
           <span className="flex items-center gap-2"><Sparkles size={16} className="text-violet-300" /> Réponse en 2 min</span>
         </div>
 
-        <div className="rounded-[2rem] bg-white p-6 shadow-2xl ring-1 ring-black/5 md:rounded-[2.5rem] md:p-10">
-          <div className="flex items-center justify-between">
+<div className="overflow-hidden rounded-[1.5rem] bg-white p-5 shadow-2xl ring-1 ring-black/5 sm:p-6 md:rounded-[2.5rem] md:p-10">          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 text-base font-black text-white">
                 P
@@ -583,8 +582,7 @@ const submitLead = async (finalData = data) => {
           </div>
 
           <div key={step} className={direction === "forward" ? "pu-step-forward" : "pu-step-back"}>
-            <h2 className="mt-9 text-2xl font-black leading-tight text-[#08243a] md:text-3xl">
-              {current.title}
+          <h2 className="mt-7 break-words text-2xl font-black leading-tight text-[#08243a] sm:text-3xl">              {current.title}
             </h2>
 
             {current.subtitle && (
@@ -790,8 +788,7 @@ const submitLead = async (finalData = data) => {
         onChange={(e) =>
           setData({ ...data, preferred_date: e.target.value })
         }
-        className="w-full rounded-2xl border-2 border-slate-200 bg-white p-5 text-lg font-bold text-[#08243a] outline-none focus:border-violet-500"
-      />
+className="w-full max-w-full rounded-2xl border-2 border-slate-200 bg-white p-4 text-base font-bold text-[#08243a] outline-none focus:border-violet-500 sm:p-5 sm:text-lg" />
     </div>
 
     <div>
@@ -804,8 +801,7 @@ const submitLead = async (finalData = data) => {
         onChange={(e) =>
           setData({ ...data, preferred_time: e.target.value })
         }
-        className="w-full rounded-2xl border-2 border-slate-200 bg-white p-5 text-lg font-bold text-[#08243a] outline-none focus:border-violet-500"
-      >
+className="w-full max-w-full rounded-2xl border-2 border-slate-200 bg-white p-4 text-base font-bold text-[#08243a] outline-none focus:border-violet-500 sm:p-5 sm:text-lg" >
         <option value="">Sélectionner une heure</option>
 
         <option value="08:00">08:00</option>
