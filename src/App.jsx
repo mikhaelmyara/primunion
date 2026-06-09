@@ -927,6 +927,8 @@ function FieldInput({ value, onChange, placeholder, icon, type = "text", error =
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          inputMode={type === "tel" ? "numeric" : undefined}
+          autoComplete={type === "tel" ? "tel" : undefined}
           className={`w-full rounded-2xl border-2 py-4 pl-14 pr-5 text-base font-bold text-[#08243a] outline-none transition ${
             error
               ? "border-red-500 focus:border-red-500"
