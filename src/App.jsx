@@ -10,7 +10,6 @@ import {
   ArrowRight,
   ShieldCheck,
   Sparkles,
-  Users,
   Home,
   Euro,
 } from "lucide-react";
@@ -1364,6 +1363,7 @@ function PrivacyPage({ go }) {
 }
 
 function AdminPage() {
+  const [selectedLead, setSelectedLead] = useState(null);
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
@@ -1431,10 +1431,16 @@ function AdminPage() {
   };
 
   const changeLead = (id, field, value) => {
-    setLeads((prev) =>
-      prev.map((lead) => (lead.id === id ? { ...lead, [field]: value } : lead))
-    );
-  };
+  setLeads((prev) =>
+    prev.map((lead) =>
+      lead.id === id ? { ...lead, [field]: value } : lead
+    )
+  );
+
+  setSelectedLead((prev) =>
+    prev ? { ...prev, [field]: value } : prev
+  );
+};
 
   useEffect(() => {
     const initAuth = async () => {
@@ -1511,6 +1517,17 @@ function AdminPage() {
       </main>
     );
   }
+  if (selectedLead) {
+  return (
+    <LeadDetailsPage
+      lead={selectedLead}
+      onBack={() => setSelectedLead(null)}
+      onChange={changeLead}
+      onSave={updateLead}
+      statusLabels={statusLabels}
+    />
+  );
+}
 
   return (
     <main className="min-h-screen bg-[#f7f8ff] px-5 py-10">
@@ -1535,125 +1552,224 @@ function AdminPage() {
         </div>
 
         {loading ? (
-          <div className="rounded-3xl bg-white p-10 text-center font-black shadow">
-            Chargement des leads...
-          </div>
-        ) : leads.length === 0 ? (
-          <div className="rounded-3xl bg-white p-10 text-center font-black shadow">
-            Aucun lead pour le moment.
-          </div>
-        ) : (
-          <div className="grid gap-6">
-            {leads.map((lead) => (
-              <div
-                key={lead.id}
-                className="rounded-[2rem] bg-white p-6 shadow-lg ring-1 ring-slate-100"
-              >
-                <div className="flex flex-col justify-between gap-5 lg:flex-row">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h2 className="text-2xl font-black text-[#08243a]">
-                        {lead.full_name || "Sans nom"}
-                      </h2>
+  <div className="rounded-3xl bg-white p-10 text-center font-black shadow">
+    Chargement des leads...
+  </div>
+) : leads.length === 0 ? (
+  <div className="rounded-3xl bg-white p-10 text-center font-black shadow">
+    Aucun lead pour le moment.
+  </div>
+) : (
+  <div className="overflow-hidden rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-100">
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[900px] border-collapse text-left">
+        <thead className="bg-slate-50 text-sm uppercase tracking-wide text-slate-500">
+          <tr>
+            <th className="px-5 py-4">Nom</th>
+            <th className="px-5 py-4">Téléphone</th>
+            <th className="px-5 py-4">Revenus</th>
+            <th className="px-5 py-4">Habite</th>
+            <th className="px-5 py-4">Catégorie</th>
+            <th className="px-5 py-4">Statut</th>
+            <th className="px-5 py-4">Date</th>
+          </tr>
+        </thead>
 
-                      <span className="rounded-full bg-violet-100 px-4 py-1 text-sm font-black text-violet-700">
-                        {lead.eligibility_category || "non classé"}
-                      </span>
+        <tbody className="divide-y divide-slate-100">
+          {leads.map((lead) => (
+            <tr
+              key={lead.id}
+              onClick={() => setSelectedLead(lead)}
+              className="cursor-pointer transition hover:bg-violet-50"
+            >
+              <td className="px-5 py-4 font-black text-[#08243a]">
+                {lead.full_name || "Sans nom"}
+              </td>
 
-                      <span className="rounded-full bg-slate-100 px-4 py-1 text-sm font-black text-slate-600">
-                        {statusLabels[lead.call_status] || "À appeler"}
-                      </span>
-                    </div>
+              <td className="px-5 py-4 font-semibold text-slate-600">
+                {lead.phone || "-"}
+              </td>
 
-                    <p className="mt-2 text-sm font-bold text-slate-400">
-                      Créé le {new Date(lead.created_at).toLocaleDateString("fr-FR")} à{" "}
-                      {new Date(lead.created_at).toLocaleTimeString("fr-FR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
+              <td className="px-5 py-4 font-semibold text-slate-600">
+                {lead.tax_income || "-"}
+              </td>
 
-                    <div className="mt-5 grid gap-3 text-sm font-semibold text-slate-600 md:grid-cols-2 lg:grid-cols-3">
-                      <p>📞 {lead.phone || "-"}</p>
-                      <p>✉️ {lead.email || "-"}</p>
-                      <p>📍 CP : {lead.city || "-"}</p>
-                      <p>👥 Foyer : {lead.household_size || "-"}</p>
-                      <p>💶 Revenus : {lead.tax_income || "-"}</p>
-                      <p>🏠 Statut : {lead.owner_status || "-"}</p>
-                      <p>🏡 Logement : {lead.housing_type || "-"}</p>
-                      <p>🔥 Chauffage : {lead.heating_type || "-"}</p>
-                      <p>📄 Facture : {lead.heating_bill || "-"}</p>
-                      <p>📞 Contact souhaité : {lead.wants_contact || "-"}</p>
-                      <p>📅 Date : {lead.preferred_date || "-"}</p>
-                      <p>⏰ Heure : {lead.preferred_time || "-"}</p>
-                    </div>
-                  </div>
+              <td className="px-5 py-4 font-semibold text-slate-600">
+                {lead.city || "-"}
+              </td>
 
-                  <div className="flex flex-col gap-3 lg:w-72">
-                    <select
-                      value={lead.call_status || "a_appeler"}
-                      onChange={(e) =>
-                        changeLead(lead.id, "call_status", e.target.value)
-                      }
-                      className="rounded-2xl border-2 border-slate-200 p-3 font-bold outline-none focus:border-violet-500"
-                    >
-                      <option value="a_appeler">À appeler</option>
-                      <option value="appele">Appelé</option>
-                      <option value="injoignable">Injoignable</option>
-                      <option value="rappel_prevu">Rappel prévu</option>
-                      <option value="termine">Terminé</option>
-                      <option value="ne_veut_pas_etre_contacte">
-                        Ne veut pas être contacté
-                      </option>
-                    </select>
+              <td className="px-5 py-4">
+                <CategoryBadge category={lead.eligibility_category} />
+              </td>
 
-                    <input
-                      type="date"
-                      value={lead.reminder_date || ""}
-                      onChange={(e) =>
-                        changeLead(lead.id, "reminder_date", e.target.value)
-                      }
-                      className="rounded-2xl border-2 border-slate-200 p-3 font-bold outline-none focus:border-violet-500"
-                    />
+              <td className="px-5 py-4">
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-black text-slate-600">
+                  {statusLabels[lead.call_status] || "À appeler"}
+                </span>
+              </td>
 
-                    <button
-                      onClick={() =>
-                        changeLead(lead.id, "call_status", "appele")
-                      }
-                      className="rounded-2xl bg-slate-900 py-3 font-black text-white"
-                    >
-                      Marquer appelé
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <label className="font-black text-slate-700">
-                    Notes internes
-                  </label>
-
-                  <textarea
-                    value={lead.internal_note || ""}
-                    onChange={(e) =>
-                      changeLead(lead.id, "internal_note", e.target.value)
-                    }
-                    placeholder="Ex : client intéressé, rappeler demain, demande devis, hésitation..."
-                    className="mt-3 min-h-28 w-full rounded-2xl border-2 border-slate-200 p-4 font-semibold outline-none focus:border-violet-500"
-                  />
-
-                  <button
-                    onClick={() => updateLead(lead)}
-                    className="mt-4 rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 px-8 py-4 font-black text-white shadow-lg"
-                  >
-                    Sauvegarder le suivi
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              <td className="px-5 py-4 text-sm font-bold text-slate-400">
+                {new Date(lead.created_at).toLocaleDateString("fr-FR")}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
       </div>
     </main>
+  );
+}
+
+function CategoryBadge({ category }) {
+  const map = {
+    tres_modeste: {
+      label: "Très modeste",
+      className: "bg-purple-100 text-purple-700",
+    },
+    modeste: {
+      label: "Modeste",
+      className: "bg-blue-100 text-blue-700",
+    },
+    intermediaire: {
+      label: "Intermédiaire",
+      className: "bg-yellow-100 text-yellow-700",
+    },
+    aise: {
+      label: "Aisé",
+      className: "bg-slate-100 text-slate-700",
+    },
+  };
+
+  const item = map[category] || {
+    label: "Non classé",
+    className: "bg-slate-100 text-slate-500",
+  };
+
+  return (
+    <span className={`rounded-full px-3 py-1 text-sm font-black ${item.className}`}>
+      {item.label}
+    </span>
+  );
+}
+
+function LeadDetailsPage({ lead, onBack, onChange, onSave, statusLabels }) {
+  return (
+    <main className="min-h-screen bg-[#f7f8ff] px-5 py-10">
+      <div className="mx-auto max-w-5xl">
+        <button
+          onClick={onBack}
+          className="mb-6 rounded-2xl bg-white px-5 py-3 font-black text-slate-600 shadow"
+        >
+          ← Retour aux leads
+        </button>
+
+        <div className="rounded-[2rem] bg-white p-8 shadow-xl">
+          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-start">
+            <div>
+              <p className="font-black text-violet-700">Fiche lead</p>
+              <h1 className="mt-2 text-4xl font-black text-[#08243a]">
+                {lead.full_name || "Sans nom"}
+              </h1>
+
+              <div className="mt-4 flex flex-wrap gap-3">
+                <CategoryBadge category={lead.eligibility_category} />
+
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-black text-slate-600">
+                  {statusLabels[lead.call_status] || "À appeler"}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => onSave(lead)}
+              className="rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 px-8 py-4 font-black text-white shadow-lg"
+            >
+              Sauvegarder
+            </button>
+          </div>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <InfoBox label="Téléphone" value={lead.phone} />
+            <InfoBox label="Email" value={lead.email} />
+            <InfoBox label="Code postal" value={lead.city} />
+            <InfoBox label="Nombre de personnes" value={lead.household_size} />
+            <InfoBox label="Revenus" value={lead.tax_income} />
+            <InfoBox label="Statut logement" value={lead.owner_status} />
+            <InfoBox label="Type logement" value={lead.housing_type} />
+            <InfoBox label="Chauffage" value={lead.heating_type} />
+            <InfoBox label="Facture chauffage" value={lead.heating_bill} />
+            <InfoBox label="Contact souhaité" value={lead.wants_contact} />
+            <InfoBox label="Date préférée" value={lead.preferred_date} />
+            <InfoBox label="Heure préférée" value={lead.preferred_time} />
+          </div>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <div>
+              <label className="font-black text-[#08243a]">
+                Statut d’appel
+              </label>
+
+              <select
+                value={lead.call_status || "a_appeler"}
+                onChange={(e) => onChange(lead.id, "call_status", e.target.value)}
+                className="mt-3 w-full rounded-2xl border-2 border-slate-200 p-4 font-bold outline-none focus:border-violet-500"
+              >
+                <option value="a_appeler">À appeler</option>
+                <option value="appele">Appelé</option>
+                <option value="injoignable">Injoignable</option>
+                <option value="rappel_prevu">Rappel prévu</option>
+                <option value="termine">Terminé</option>
+                <option value="ne_veut_pas_etre_contacte">
+                  Ne veut pas être contacté
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label className="font-black text-[#08243a]">
+                Date de rappel
+              </label>
+
+              <input
+                type="date"
+                value={lead.reminder_date || ""}
+                onChange={(e) => onChange(lead.id, "reminder_date", e.target.value)}
+                className="mt-3 w-full rounded-2xl border-2 border-slate-200 p-4 font-bold outline-none focus:border-violet-500"
+              />
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <label className="font-black text-[#08243a]">
+              Notes internes
+            </label>
+
+            <textarea
+              value={lead.internal_note || ""}
+              onChange={(e) => onChange(lead.id, "internal_note", e.target.value)}
+              placeholder="Ex : client intéressé, rappeler demain, demande devis, hésitation..."
+              className="mt-3 min-h-40 w-full rounded-2xl border-2 border-slate-200 p-4 font-semibold outline-none focus:border-violet-500"
+            />
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function InfoBox({ label, value }) {
+  return (
+    <div className="rounded-2xl bg-slate-50 p-5">
+      <p className="text-sm font-black uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+      <p className="mt-2 text-lg font-black text-[#08243a]">
+        {value || "-"}
+      </p>
+    </div>
   );
 }
 function Footer({ go }) {
@@ -1673,8 +1789,7 @@ function Footer({ go }) {
             <p className="text-sm uppercase tracking-wide text-slate-500">Navigation</p>
             <button
   onClick={() => go("admin")}
-  className="text-left text-slate-500 transition hover:text-white"
->
+className="hidden text-left text-slate-500 transition hover:text-white md:block">
   Admin
 </button>
             <button onClick={() => go("home")} className="text-left transition hover:text-white">Accueil</button>
