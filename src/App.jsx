@@ -1053,19 +1053,19 @@ function ProjectStepsSection({ go }) {
   const steps = [
     {
       title: "Une offre claire",
-      text: "Vous recevez une estimation transparente, sans frais cachés ni petites lignes. Vous savez exactement à quoi vous attendre dès le départ.",
+      text: "Chaque maison est différente. Nous estimons vos travaux ainsi que les aides disponibles pour votre projet.",
     },
     {
       title: "Des aides estimées",
-      text: "Nous identifions toutes les primes auxquelles vous avez droit et calculons votre reste à charge réel selon votre situation.",
+      text: "PrimUnion sécurise vos aides CEE et MaPrimeRénov’ dès la signature du devis, avec une déduction immédiate sur le montant total de vos travaux.",
     },
     {
       title: "Un suivi intégral",
-      text: "Un interlocuteur dédié vous guide à chaque étape, du montage du dossier jusqu'à la fin des travaux.",
+      text: "PrimUnion vous accompagne de A à Z : rendez-vous téléphoniques, démarches administratives, suivi des primes, facturation et finalisation des travaux.",
     },
     {
       title: "Une solution adaptée",
-      text: "Nous sélectionnons l'équipement et l'artisan RGE qui correspondent vraiment à votre logement et à votre budget.",
+      text: "PrimUnion s’appuie sur un réseau de partenaires certifiés pour assurer la réception du chantier et garantir la conformité des travaux réalisés.",
     },
   ];
 
