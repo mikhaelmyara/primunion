@@ -965,7 +965,13 @@ function ContactPage() {
           <div className="grid gap-4">
             <input className="rounded-2xl border p-4" placeholder="Nom complet" />
             <input className="rounded-2xl border p-4" placeholder="Email" />
-            <input className="rounded-2xl border p-4" placeholder="Téléphone" />
+            <input
+  type="tel"
+  inputMode="numeric"
+  autoComplete="tel"
+  className="rounded-2xl border p-4"
+  placeholder="Téléphone"
+/>
             <textarea className="min-h-36 rounded-2xl border p-4" placeholder="Message" />
             <button className="rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 py-4 font-black text-white">
               Envoyer
