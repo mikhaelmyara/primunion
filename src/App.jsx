@@ -1370,6 +1370,7 @@ function PrivacyPage({ go }) {
 }
 
 function AdminPage() {
+  
   const [selectedLead, setSelectedLead] = useState(null);
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1377,6 +1378,8 @@ function AdminPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [associateFilter, setAssociateFilter] = useState("");
 
   const loginAdmin = async (e) => {
     e.preventDefault();
@@ -1485,6 +1488,19 @@ function AdminPage() {
   };
   const associates = ["Josh", "Mikhael", "David"];
 
+  const filteredLeads = leads.filter((lead) => {
+  const statusMatch = statusFilter ? lead.call_status === statusFilter : true;
+
+  const associateMatch =
+    associateFilter === "__unassigned__"
+      ? !lead.assigned_to
+      : associateFilter
+      ? lead.assigned_to === associateFilter
+      : true;
+
+  return statusMatch && associateMatch;
+});
+
   if (!session) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-[#081d33] via-[#132b5c] to-[#140b2d] px-5 py-20">
@@ -1570,7 +1586,36 @@ function AdminPage() {
     Aucun lead pour le moment.
   </div>
 ) : (
-  <div className="overflow-hidden rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-100">
+  <>
+    <div className="mb-6 flex flex-col gap-4 rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-slate-100 md:flex-row">
+      <select
+        value={statusFilter}
+        onChange={(e) => setStatusFilter(e.target.value)}
+        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold outline-none focus:border-violet-500 md:w-56"
+      >
+        <option value="">Tous les statuts</option>
+        <option value="a_appeler">À appeler</option>
+        <option value="appele">Appelé</option>
+        <option value="injoignable">Injoignable</option>
+        <option value="rappel_prevu">Rappel prévu</option>
+        <option value="termine">Terminé</option>
+        <option value="ne_veut_pas_etre_contacte">Ne veut pas être contacté</option>
+      </select>
+
+      <select
+        value={associateFilter}
+        onChange={(e) => setAssociateFilter(e.target.value)}
+        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold outline-none focus:border-violet-500 md:w-56"
+      >
+        <option value="">Tous les associés</option>
+        <option value="__unassigned__">Non assigné</option>
+        {associates.map((name) => (
+          <option key={name} value={name}>{name}</option>
+        ))}
+      </select>
+    </div>
+
+    <div className="overflow-hidden rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-100">
     <div className="overflow-x-auto">
       <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
         <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
@@ -1587,7 +1632,7 @@ function AdminPage() {
         </thead>
 
         <tbody className="divide-y divide-slate-100">
-          {leads.map((lead) => (
+          {filteredLeads.map((lead) => (
             <tr
               key={lead.id}
               onClick={() => setSelectedLead(lead)}
@@ -1646,6 +1691,9 @@ function AdminPage() {
       </table>
     </div>
   </div>
+
+  </>
+
 )}
       </div>
     </main>
