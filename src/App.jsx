@@ -463,81 +463,81 @@ function SimulationPage({ go }) {
       ? isAppointmentValid
       : true;
 
-const submitLead = async (finalData = data) => {
-  const eligibility = getEligibilityCategory(finalData);
+      const submitLead = async (finalData = data) => {
+        const eligibility = getEligibilityCategory(finalData);
 
-  const finalLead = {
-  ...finalData,
-  preferred_date: finalData.preferred_date || null,
-  preferred_time: finalData.preferred_time || null,
-  call_status:
-    finalData.wants_contact === "Non"
-      ? "ne_veut_pas_etre_contacte"
-      : "a_appeler",
-};
+        const finalLead = {
+        ...finalData,
+        preferred_date: finalData.preferred_date || null,
+        preferred_time: finalData.preferred_time || null,
+        call_status:
+          finalData.wants_contact === "Non"
+            ? "ne_veut_pas_etre_contacte"
+            : "a_appeler",
+      };
 
-  const { error } = await supabase.from("leads").insert([
-    {
-      ...finalLead,
-      ...eligibility,
-      household_size: String(finalData.household_size),
-    },
-  ]);
+        const { error } = await supabase.from("leads").insert([
+          {
+            ...finalLead,
+            ...eligibility,
+            household_size: String(finalData.household_size),
+          },
+        ]);
 
-  if (error) {
-    console.error(error);
-   alert(error.message); 
-    return;
-  }
+        if (error) {
+          console.error(error);
+        alert(error.message); 
+          return;
+        }
 
-  setShowSuccess(true);
+        setShowSuccess(true);
 
-  setStep(0);
+        setStep(0);
 
-  window.scrollTo(0, 0);
+        window.scrollTo(0, 0);
 
-  setData({
-    household_size: 1,
-    full_name: "",
-    email: "",
-    phone: "",
-    preferred_date: "",
-    preferred_time: "",
-  });
-};
+        setData({
+          household_size: 1,
+          full_name: "",
+          email: "",
+          phone: "",
+          preferred_date: "",
+          preferred_time: "",
+        });
+      };
 
-  const next = async () => {
-    if (!canContinue) return;
+        const next = async () => {
+          if (!canContinue) return;
 
-    setDirection("forward");
+          setDirection("forward");
 
-    if (step < steps.length - 1) {
-      setStep(step + 1);
-      return;
-    }
+          if (step < steps.length - 1) {
+            setStep(step + 1);
+            return;
+          }
 
-    await submitLead();
-  };
+          await submitLead();
+        };
 
-  const back = () => {
-    setDirection("back");
-    setStep(Math.max(0, step - 1));
-  };
+        const back = () => {
+          setDirection("back");
+          setStep(Math.max(0, step - 1));
+        };
 
-  const choose = (value) => {
-    const updatedData = { ...data, [current.key]: value };
-    setData(updatedData);
-    setDirection("forward");
+        const choose = (value) => {
+          const updatedData = { ...data, [current.key]: value };
+          setData(updatedData);
+          setDirection("forward");
 
-    if (current.key === "wants_contact" && value === "Non") {
-      setTimeout(() => submitLead(updatedData), 250);
-      return;
-    }
+          if (current.key === "wants_contact" && value === "Non") {
+            setTimeout(() => submitLead(updatedData), 250);
+            return;
+          }
 
-    setTimeout(() => {
-      if (step < steps.length - 1) setStep(step + 1);
-    }, 250);
-  };
+          setTimeout(() => {
+            if (step < steps.length - 1) setStep(step + 1);
+          }, 250);
+        };
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#081d33] via-[#132b5c] to-[#140b2d] px-4 py-10">
@@ -790,7 +790,8 @@ const submitLead = async (finalData = data) => {
         onChange={(e) =>
           setData({ ...data, preferred_date: e.target.value })
         }
-className="w-full max-w-full rounded-2xl border-2 border-slate-200 bg-white p-4 text-base font-bold text-[#08243a] outline-none focus:border-violet-500 sm:p-5 sm:text-lg" />
+        className="block w-full min-w-0 max-w-full appearance-none rounded-2xl border-2 border-slate-200 bg-white p-4 text-base font-bold text-[#08243a] outline-none focus:border-violet-500 sm:p-5 sm:text-lg"
+      />
     </div>
 
     <div>
@@ -1740,13 +1741,11 @@ function LeadDetailsPage({ lead, onBack, onChange, onSave, statusLabels }) {
               </label>
 
               <input
-  type="date"
-  value={data.preferred_date}
-  onChange={(e) =>
-    setData({ ...data, preferred_date: e.target.value })
-  }
-  className="block w-full min-w-0 rounded-2xl border-2 border-slate-200 bg-white p-4 text-base font-bold text-[#08243a] outline-none focus:border-violet-500 sm:p-5 sm:text-lg"
-/>
+                type="date"
+                value={lead.reminder_date || ""}
+                onChange={(e) => onChange(lead.id, "reminder_date", e.target.value)}
+                className="mt-3 block w-full min-w-0 max-w-full appearance-none rounded-2xl border-2 border-slate-200 bg-white p-4 font-bold outline-none focus:border-violet-500"
+              />
             </div>
           </div>
 
