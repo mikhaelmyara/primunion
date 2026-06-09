@@ -1572,8 +1572,8 @@ function AdminPage() {
 ) : (
   <div className="overflow-hidden rounded-[2rem] bg-white shadow-xl ring-1 ring-slate-100">
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[900px] border-collapse text-left">
-        <thead className="bg-slate-50 text-sm uppercase tracking-wide text-slate-500">
+      <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
+        <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th className="px-5 py-4">Nom</th>
             <th className="px-5 py-4">Téléphone</th>
@@ -1593,34 +1593,34 @@ function AdminPage() {
               onClick={() => setSelectedLead(lead)}
               className="cursor-pointer transition hover:bg-violet-50"
             >
-              <td className="px-5 py-4 font-black text-[#08243a]">
+              <td className="px-4 py-3 text-sm font-bold text-[#08243a]">
                 {lead.full_name || "Sans nom"}
               </td>
 
-              <td className="px-5 py-4 font-semibold text-slate-600">
+              <td className="px-4 py-3 text-sm font-medium text-slate-600">
                 {lead.phone || "-"}
               </td>
 
-              <td className="px-5 py-4 font-semibold text-slate-600">
+              <td className="px-4 py-3 text-sm font-medium text-slate-600">
                 {lead.tax_income || "-"}
               </td>
 
-              <td className="px-5 py-4 font-semibold text-slate-600">
+              <td className="px-4 py-3 text-sm font-medium text-slate-600">
                 {lead.city || "-"}
               </td>
 
-              <td className="px-5 py-4">
+              <td className="px-4 py-3">
                 <CategoryBadge category={lead.eligibility_category} />
               </td>
 
-              <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+              <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                 <select
                   value={lead.assigned_to || ""}
                   onChange={(e) => {
                     changeLead(lead.id, "assigned_to", e.target.value);
                     updateLead({ ...lead, assigned_to: e.target.value });
                   }}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-violet-500"
+                  className="rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold outline-none focus:border-violet-500"
                 >
                   <option value="">Non assigné</option>
                   {associates.map((name) => (
@@ -1631,13 +1631,13 @@ function AdminPage() {
                 </select>
               </td>
 
-              <td className="px-5 py-4">
+              <td className="px-4 py-3">
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-black text-slate-600">
                   {statusLabels[lead.call_status] || "À appeler"}
                 </span>
               </td>
 
-              <td className="px-5 py-4 text-sm font-bold text-slate-400">
+              <td className="px-4 py-3 text-sm font-bold text-slate-400">
                 {new Date(lead.created_at).toLocaleDateString("fr-FR")}
               </td>
             </tr>
@@ -1678,7 +1678,7 @@ function CategoryBadge({ category }) {
   };
 
   return (
-    <span className={`rounded-full px-3 py-1 text-sm font-black ${item.className}`}>
+    <span className={`rounded-full px-2.5 py-1 text-xs font-black ${item.className}`}>
       {item.label}
     </span>
   );
