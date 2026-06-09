@@ -484,7 +484,7 @@ const submitLead = async (finalData = data) => {
 
   if (error) {
     console.error(error);
-    alert("Erreur d'envoi. Vérifie Supabase.");
+   alert(error.message); 
     return;
   }
 
