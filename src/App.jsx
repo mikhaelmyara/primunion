@@ -1418,6 +1418,7 @@ function AdminPage() {
       .from("leads")
       .update({
         call_status: lead.call_status,
+        assigned_to: lead.assigned_to || null,
         internal_note: lead.internal_note,
         reminder_date: lead.reminder_date || null,
         last_called_at:
@@ -1482,6 +1483,7 @@ function AdminPage() {
     termine: "Terminé",
     ne_veut_pas_etre_contacte: "Ne veut pas être contacté",
   };
+  const associates = ["Josh", "Mikhael", "David"];
 
   if (!session) {
     return (
@@ -1577,6 +1579,7 @@ function AdminPage() {
             <th className="px-5 py-4">Revenus</th>
             <th className="px-5 py-4">Habite</th>
             <th className="px-5 py-4">Catégorie</th>
+            <th className="px-5 py-4">Assigné à</th>
             <th className="px-5 py-4">Statut</th>
             <th className="px-5 py-4">Date</th>
           </tr>
@@ -1607,6 +1610,24 @@ function AdminPage() {
 
               <td className="px-5 py-4">
                 <CategoryBadge category={lead.eligibility_category} />
+              </td>
+
+              <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                <select
+                  value={lead.assigned_to || ""}
+                  onChange={(e) => {
+                    changeLead(lead.id, "assigned_to", e.target.value);
+                    updateLead({ ...lead, assigned_to: e.target.value });
+                  }}
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-violet-500"
+                >
+                  <option value="">Non assigné</option>
+                  {associates.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
               </td>
 
               <td className="px-5 py-4">
