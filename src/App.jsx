@@ -1796,8 +1796,9 @@ function Footer({ go }) {
             <p className="text-sm uppercase tracking-wide text-slate-500">Navigation</p>
             <button
   onClick={() => go("admin")}
-className="hidden text-left text-slate-500 transition hover:text-white md:block">
-  Admin
+  className="text-left text-slate-500 transition hover:text-white"
+>
+  Espace partenaire
 </button>
             <button onClick={() => go("home")} className="text-left transition hover:text-white">Accueil</button>
             <button onClick={() => go("simulation")} className="text-left transition hover:text-white">Simulation</button>
