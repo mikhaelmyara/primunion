@@ -124,7 +124,7 @@ function HomePage({ go }) {
             <div className="mt-10 grid grid-cols-3 gap-4">
               {[
                 ["17 000€", "Aides max."],
-                ["20s", "Simulation"],
+                ["20 sec", "Simulation"],
                 ["100%", "Gratuit"],
               ].map(([big, small]) => (
                 <div key={big} className="rounded-2xl bg-white/10 p-5 text-center backdrop-blur">
