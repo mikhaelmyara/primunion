@@ -1529,12 +1529,13 @@ function AdminPage() {
   if (selectedLead) {
   return (
     <LeadDetailsPage
-      lead={selectedLead}
-      onBack={() => setSelectedLead(null)}
-      onChange={changeLead}
-      onSave={updateLead}
-      statusLabels={statusLabels}
-    />
+  lead={selectedLead}
+  onBack={() => setSelectedLead(null)}
+  onChange={changeLead}
+  onSave={updateLead}
+  statusLabels={statusLabels}
+  associates={associates}
+/>
   );
 }
 
@@ -1683,7 +1684,7 @@ function CategoryBadge({ category }) {
   );
 }
 
-function LeadDetailsPage({ lead, onBack, onChange, onSave, statusLabels }) {
+function LeadDetailsPage({ lead, onBack, onChange, onSave, statusLabels, associates }) {
   return (
     <main className="min-h-screen bg-[#f7f8ff] px-5 py-10">
       <div className="mx-auto max-w-5xl">
@@ -1735,40 +1736,59 @@ function LeadDetailsPage({ lead, onBack, onChange, onSave, statusLabels }) {
           </div>
 
           <div className="mt-8 grid gap-5 md:grid-cols-2">
-            <div>
-              <label className="font-black text-[#08243a]">
-                Statut d’appel
-              </label>
+  <div>
+    <label className="font-black text-[#08243a]">
+      Assigné à
+    </label>
 
-              <select
-                value={lead.call_status || "a_appeler"}
-                onChange={(e) => onChange(lead.id, "call_status", e.target.value)}
-                className="mt-3 w-full rounded-2xl border-2 border-slate-200 p-4 font-bold outline-none focus:border-violet-500"
-              >
-                <option value="a_appeler">À appeler</option>
-                <option value="appele">Appelé</option>
-                <option value="injoignable">Injoignable</option>
-                <option value="rappel_prevu">Rappel prévu</option>
-                <option value="termine">Terminé</option>
-                <option value="ne_veut_pas_etre_contacte">
-                  Ne veut pas être contacté
-                </option>
-              </select>
-            </div>
+    <select
+      value={lead.assigned_to || ""}
+      onChange={(e) => onChange(lead.id, "assigned_to", e.target.value)}
+      className="mt-3 w-full rounded-2xl border-2 border-slate-200 p-4 font-bold outline-none focus:border-violet-500"
+    >
+      <option value="">Non assigné</option>
+      {associates.map((name) => (
+        <option key={name} value={name}>
+          {name}
+        </option>
+      ))}
+    </select>
+  </div>
 
-            <div>
-              <label className="font-black text-[#08243a]">
-                Date de rappel
-              </label>
+  <div>
+    <label className="font-black text-[#08243a]">
+      Statut d’appel
+    </label>
 
-              <input
-                type="date"
-                value={lead.reminder_date || ""}
-                onChange={(e) => onChange(lead.id, "reminder_date", e.target.value)}
-                className="mt-3 block w-full min-w-0 max-w-full appearance-none rounded-2xl border-2 border-slate-200 bg-white p-4 font-bold outline-none focus:border-violet-500"
-              />
-            </div>
-          </div>
+    <select
+      value={lead.call_status || "a_appeler"}
+      onChange={(e) => onChange(lead.id, "call_status", e.target.value)}
+      className="mt-3 w-full rounded-2xl border-2 border-slate-200 p-4 font-bold outline-none focus:border-violet-500"
+    >
+      <option value="a_appeler">À appeler</option>
+      <option value="appele">Appelé</option>
+      <option value="injoignable">Injoignable</option>
+      <option value="rappel_prevu">Rappel prévu</option>
+      <option value="termine">Terminé</option>
+      <option value="ne_veut_pas_etre_contacte">
+        Ne veut pas être contacté
+      </option>
+    </select>
+  </div>
+
+  <div>
+    <label className="font-black text-[#08243a]">
+      Date de rappel
+    </label>
+
+    <input
+      type="date"
+      value={lead.reminder_date || ""}
+      onChange={(e) => onChange(lead.id, "reminder_date", e.target.value)}
+      className="mt-3 block w-full min-w-0 max-w-full appearance-none rounded-2xl border-2 border-slate-200 bg-white p-4 font-bold outline-none focus:border-violet-500"
+    />
+  </div>
+</div>
 
           <div className="mt-8">
             <label className="font-black text-[#08243a]">
