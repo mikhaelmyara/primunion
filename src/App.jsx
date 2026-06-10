@@ -1184,9 +1184,9 @@ function ContactPage() {
           <h1 className="mt-3 text-5xl font-black">Parlons de votre projet</h1>
           <p className="mt-5 text-lg text-slate-600">Une question ? Envoyez-nous un message.</p>
           <div className="mt-10 space-y-5">
-            <Info icon={<Phone />} text="01 23 45 67 89" />
-            <Info icon={<Mail />} text="contact@primunion.fr" />
-            <Info icon={<MapPin />} text="France" />
+            <Info icon={<Phone />} text="+34 657 398 227" />
+            <Info icon={<Mail />} text="mikhaelmyara@gmail.com" />
+            <Info icon={<MapPin />} text="France/Espagne" />
           </div>
         </div>
 
@@ -1409,7 +1409,7 @@ function PrivacyPage({ go }) {
   return (
     <LegalLayout go={go} badge="Vos données personnelles" title="Politique de confidentialité" intro="PrimUnion accorde une grande importance à la protection de vos données.">
       <LegalBlock title="1. Responsable du traitement">
-        <p>Le responsable du traitement des données est <strong>[Raison sociale]</strong>. Contact : contact@primunion.fr.</p>
+        <p>Le responsable du traitement des données est <strong>Mikhael Myara</strong>. Contact : mikhaelmyara@gmail.com</p>
       </LegalBlock>
       <LegalBlock title="2. Données collectées">
         <ul className="list-disc space-y-1 pl-6">
