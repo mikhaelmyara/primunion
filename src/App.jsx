@@ -1382,12 +1382,12 @@ function LegalPage({ go }) {
   return (
     <LegalLayout go={go} badge="Informations légales" title="Mentions légales" intro="Conformément à la loi pour la confiance dans l'économie numérique (LCEN), voici les informations relatives à l'éditeur et à l'hébergeur de ce site.">
       <LegalBlock title="1. Éditeur du site">
-        <p>Le site PrimUnion est édité par <strong>[Raison sociale]</strong>, [forme juridique] au capital de [montant] €, immatriculée au RCS de [ville] sous le numéro <strong>[n° SIRET / RCS]</strong>.</p>
-        <p>Siège social : [adresse complète].</p>
-        <p>Contact : contact@primunion.fr — 01 23 45 67 89.</p>
+        <p>Le site PrimUnion est édité par Mikhael Myara</p>
+
+        <p>Contact : Mikhael Myara — +34 657 398 227.</p>
       </LegalBlock>
       <LegalBlock title="2. Hébergeur">
-        <p>Le site est hébergé par <strong>[Nom de l'hébergeur]</strong>, [adresse de l'hébergeur], téléphone : [téléphone de l'hébergeur].</p>
+        <p>Le site est hébergé par <strong>Vercel</strong>, 440 N Barranca Ave #4133 Covina, CA 91723 États-Unis</p>
       </LegalBlock>
       <LegalBlock title="3. Activité">
         <p>PrimUnion est une plateforme de mise en relation et d'information dans le domaine de la rénovation énergétique.</p>
