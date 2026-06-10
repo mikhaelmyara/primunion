@@ -1217,6 +1217,7 @@ function WhySection() {
               "Bénéficiez d’aides possibles pour financer votre projet",
               "Une équipe disponible étape par étape",
               "Un parcours simple, rapide et adapté",
+              "Des artisans et partenaires certifiés RGE",
             ].map((item) => (
               <div key={item} className="flex gap-4">
                 <CheckCircle className="shrink-0 text-violet-300" />
@@ -1466,6 +1467,10 @@ function Footer({ go }) {
         <div className="mt-10 border-t border-white/10 pt-6 text-center text-sm text-slate-500">
           © 2018 – 2026 PrimUnion. Tous droits réservés.
         </div>
+        <p className="mt-3 text-slate-400">
+  Plateforme marketing rénovation énergétique.<br />
+  Partenaires et installateurs certifiés RGE.
+  </p>
       </div>
     </footer>
   );
