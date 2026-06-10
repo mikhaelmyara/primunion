@@ -1294,9 +1294,9 @@ function ProjectStepsSection({ go }) {
 
 function ReviewsSection() {
   const reviews = [
-    ["V", "Valerie F.", "Très satisfaite de la simulation. L’équipe est professionnelle et réactive."],
-    ["M", "Marques J.", "Service impeccable du début à la fin. Contact rapide et explications claires."],
-    ["D", "Dalil A.", "PrimUnion m’a bien guidé dans ma demande."],
+    ["V", "Viviane F.", "Très satisfaite de la simulation. L’équipe est professionnelle et réactive. Je recommande vivement PrimUnion pour tous vos projets de rénovation."],
+    ["M", "Lang J.", "Service impeccable du début à la fin. Contact super réactif et explications claires."],
+    ["D", "Dalil A.", "Une semaine de la simulation à l’installation, tout s’est bien déroulé."],
   ];
 
   return (
@@ -1382,22 +1382,26 @@ function LegalPage({ go }) {
   return (
     <LegalLayout go={go} badge="Informations légales" title="Mentions légales" intro="Conformément à la loi pour la confiance dans l'économie numérique (LCEN), voici les informations relatives à l'éditeur et à l'hébergeur de ce site.">
       <LegalBlock title="1. Éditeur du site">
-        <p>Le site PrimUnion est édité par Mikhael Myara</p>
+        <p>Le site PrimUnion est édité par <strong>Mikhael Myara</strong>.</p>
+        <p>Contact : Mikhael Myara — mikhaelmyara@gmail.com — +34 657 398 227.</p>
+      </LegalBlock>
 
-        <p>Contact : Mikhael Myara — +34 657 398 227.</p>
-      </LegalBlock>
       <LegalBlock title="2. Hébergeur">
-        <p>Le site est hébergé par <strong>Vercel</strong>, 440 N Barranca Ave #4133 Covina, CA 91723 États-Unis</p>
+        <p>Le site est hébergé par <strong>Vercel Inc.</strong>, 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis.</p>
       </LegalBlock>
+
       <LegalBlock title="3. Activité">
         <p>PrimUnion est une plateforme de mise en relation et d'information dans le domaine de la rénovation énergétique.</p>
       </LegalBlock>
+
       <LegalBlock title="4. Propriété intellectuelle">
         <p>L'ensemble des contenus présents sur ce site est protégé par le droit de la propriété intellectuelle.</p>
       </LegalBlock>
+
       <LegalBlock title="5. Responsabilité">
         <p>Les estimations fournies par le simulateur sont données à titre indicatif.</p>
       </LegalBlock>
+
       <LegalBlock title="6. Droit applicable">
         <p>Les présentes mentions légales sont régies par le droit français.</p>
       </LegalBlock>
