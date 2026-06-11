@@ -792,6 +792,60 @@ const deleteSelectedLeads = async () => {
     URL.revokeObjectURL(url);
   };
 
+
+
+  if (selectedLead) {
+    return (
+      <LeadDetailsPage
+        lead={selectedLead}
+        onBack={() => setSelectedLead(null)}
+        onChange={changeLead}
+        onSave={updateLead}
+        onQuickUpdate={quickUpdateLead}
+        statusLabels={STATUS_LABELS}
+        statusStyles={STATUS_STYLES}
+        associates={ASSOCIATES}
+        currentUser={currentUser}
+      />
+    );
+  }
+const [columnWidths, setColumnWidths] = useState({
+  selection: 70,
+  nom: 180,
+  telephone: 170,
+  email: 240,
+  revenus: 180,
+  cp: 100,
+  categorie: 150,
+  assigne: 170,
+  statut: 170,
+  rappel: 140,
+  date: 140,
+});
+
+const startResize = (column, e) => {
+  e.preventDefault();
+
+  const startX = e.clientX;
+  const startWidth = columnWidths[column];
+
+  const onMouseMove = (moveEvent) => {
+    const newWidth = startWidth + (moveEvent.clientX - startX);
+
+    setColumnWidths((prev) => ({
+      ...prev,
+      [column]: Math.max(newWidth, 60),
+    }));
+  };
+
+  const onMouseUp = () => {
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+  };
+
+  document.addEventListener("mousemove", onMouseMove);
+  document.addEventListener("mouseup", onMouseUp);
+};
   if (!session || !currentUser) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-[#081d33] via-[#132b5c] to-[#140b2d] px-5 py-20">
@@ -807,22 +861,6 @@ const deleteSelectedLeads = async () => {
           </form>
         </div>
       </main>
-    );
-  }
-
-  if (selectedLead) {
-    return (
-      <LeadDetailsPage
-        lead={selectedLead}
-        onBack={() => setSelectedLead(null)}
-        onChange={changeLead}
-        onSave={updateLead}
-        onQuickUpdate={quickUpdateLead}
-        statusLabels={STATUS_LABELS}
-        statusStyles={STATUS_STYLES}
-        associates={ASSOCIATES}
-        currentUser={currentUser}
-      />
     );
   }
 
@@ -953,17 +991,127 @@ const deleteSelectedLeads = async () => {
                   <table className="w-full min-w-[1120px] border-collapse text-left text-[13px]">
                     <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
                       <tr>
-                        <th className="px-4 py-3">Sélection</th>
-                        <th className="px-4 py-3">Nom</th>
-                        <th className="px-4 py-3">Téléphone</th>
-                        <th className="px-4 py-3">Email</th>
-                        <th className="px-4 py-3">Revenus</th>
-                        <th className="px-4 py-3">CP</th>
-                        <th className="px-4 py-3">Catégorie</th>
-                        <th className="px-4 py-3">Assigné à</th>
-                        <th className="px-4 py-3">Statut</th>
-                        <th className="px-4 py-3">Rappel</th>
-                        <th className="px-4 py-3">Date</th>
+                        <th
+                            className="relative px-4 py-3"
+                            style={{ width: columnWidths.nom }}
+                          >
+                            Sélection
+
+                            <div
+                              onMouseDown={(e) => startResize("nom", e)}
+                              className="absolute right-0 top-0 h-full w-2 cursor-col-resize"
+                            />
+                          </th>
+                        <th
+                            className="relative px-4 py-3"
+                            style={{ width: columnWidths.nom }}
+                          >
+                            Nom
+
+                            <div
+                              onMouseDown={(e) => startResize("nom", e)}
+                              className="absolute right-0 top-0 h-full w-2 cursor-col-resize"
+                            />
+                          </th>
+                        <th
+  className="relative px-4 py-3"
+  style={{ width: columnWidths.nom }}
+>
+  Téléphone
+
+  <div
+    onMouseDown={(e) => startResize("nom", e)}
+    className="absolute right-0 top-0 h-full w-2 cursor-col-resize"
+  />
+</th>
+                        <th
+  className="relative px-4 py-3"
+  style={{ width: columnWidths.nom }}
+>
+  Email
+
+  <div
+    onMouseDown={(e) => startResize("nom", e)}
+    className="absolute right-0 top-0 h-full w-2 cursor-col-resize"
+  />
+</th>
+                        <th
+  className="relative px-4 py-3"
+  style={{ width: columnWidths.nom }}
+>
+  Revenus
+
+  <div
+    onMouseDown={(e) => startResize("nom", e)}
+    className="absolute right-0 top-0 h-full w-2 cursor-col-resize"
+  />
+</th>
+                        <th
+  className="relative px-4 py-3"
+  style={{ width: columnWidths.nom }}
+>
+  CP
+
+  <div
+    onMouseDown={(e) => startResize("nom", e)}
+    className="absolute right-0 top-0 h-full w-2 cursor-col-resize"
+  />
+</th>
+                        <th
+  className="relative px-4 py-3"
+  style={{ width: columnWidths.nom }}
+>
+  Catégorie
+
+  <div
+    onMouseDown={(e) => startResize("nom", e)}
+    className="absolute right-0 top-0 h-full w-2 cursor-col-resize"
+  />
+</th>
+                        <th
+  className="relative px-4 py-3"
+  style={{ width: columnWidths.nom }}
+>
+  Assigné à
+
+  <div
+    onMouseDown={(e) => startResize("nom", e)}
+    className="absolute right-0 top-0 h-full w-2 cursor-col-resize"
+  />
+</th>
+                        <th
+  className="relative px-4 py-3"
+  style={{ width: columnWidths.nom }}
+>
+  Statut
+
+  <div
+    onMouseDown={(e) => startResize("nom", e)}
+    className="absolute right-0 top-0 h-full w-2 cursor-col-resize"
+  />
+</th>
+                        <th
+  className="relative px-4 py-3"
+  style={{ width: columnWidths.nom }}
+>
+  Rappel
+
+  <div
+    onMouseDown={(e) => startResize("nom", e)}
+    className="absolute right-0 top-0 h-full w-2 cursor-col-resize"
+  />
+</th>
+                        <th
+  className="relative px-4 py-3"
+  style={{ width: columnWidths.nom }}
+>
+  Date
+
+  <div
+    onMouseDown={(e) => startResize("nom", e)}
+    className="absolute right-0 top-0 h-full w-2 cursor-col-resize"
+  />
+</th>
                       </tr>
                     </thead>
 
