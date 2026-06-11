@@ -52,6 +52,7 @@ const PIPELINE_COLUMNS = [
   { key: "a_appeler", title: "Nouveau / À appeler" },
   { key: "rappel_prevu", title: "Rappel" },
   { key: "appele", title: "Appelé / Qualifié" },
+  { key: "demande_document", title: "Documents demandés" },
   { key: "termine", title: "Terminé" },
 ];
 
