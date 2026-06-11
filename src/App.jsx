@@ -512,6 +512,19 @@ function FieldInput({ value, onChange, placeholder, icon, type = "text", error =
 function AdminPage() {
   const [selectedLeadIds, setSelectedLeadIds] = useState([]);
   const [selectedLead, setSelectedLead] = useState(null);
+  const [columnWidths, setColumnWidths] = useState({
+  selection: 70,
+  nom: 180,
+  telephone: 170,
+  email: 240,
+  revenus: 180,
+  cp: 100,
+  categorie: 150,
+  assigne: 170,
+  statut: 170,
+  rappel: 140,
+  date: 140,
+});
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
@@ -809,19 +822,7 @@ const deleteSelectedLeads = async () => {
       />
     );
   }
-const [columnWidths, setColumnWidths] = useState({
-  selection: 70,
-  nom: 180,
-  telephone: 170,
-  email: 240,
-  revenus: 180,
-  cp: 100,
-  categorie: 150,
-  assigne: 170,
-  statut: 170,
-  rappel: 140,
-  date: 140,
-});
+
 
 const startResize = (column, e) => {
   e.preventDefault();
@@ -1241,8 +1242,14 @@ function PipelineView({ leads, setSelectedLead, onQuickUpdate, isAdmin }) {
 }
 
 function LeadDetailsPage({ lead, onBack, onChange, onSave, onQuickUpdate, statusLabels, statusStyles, associates, currentUser }) {
+
   const isAdmin = currentUser?.role === "admin";
 
+  if (!lead) {
+
+    return null;
+
+  }
   return (
     <main className="min-h-screen bg-[#f7f8ff] px-4 py-6">
       <div className="mx-auto max-w-[1400px]">
