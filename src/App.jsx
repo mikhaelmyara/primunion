@@ -510,6 +510,7 @@ function FieldInput({ value, onChange, placeholder, icon, type = "text", error =
 }
 
 function AdminPage() {
+  const [selectedLeadIds, setSelectedLeadIds] = useState([]);
   const [selectedLead, setSelectedLead] = useState(null);
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -605,6 +606,35 @@ function AdminPage() {
     changeLead(lead.id, field, value);
     await updateLead(updated, true);
   };
+  const toggleLeadSelection = (id) => {
+  setSelectedLeadIds((prev) =>
+    prev.includes(id) ? prev.filter((leadId) => leadId !== id) : [...prev, id]
+  );
+};
+
+const deleteSelectedLeads = async () => {
+  if (selectedLeadIds.length === 0) return;
+
+  const confirmed = window.confirm(
+    `Supprimer ${selectedLeadIds.length} lead(s) ? Cette action est définitive.`
+  );
+
+  if (!confirmed) return;
+
+  const { error } = await supabase
+    .from("leads")
+    .delete()
+    .in("id", selectedLeadIds);
+
+  if (error) {
+    console.error(error);
+    alert("Erreur suppression leads");
+    return;
+  }
+
+  setSelectedLeadIds([]);
+  loadLeads();
+};
 
   useEffect(() => {
     const initAuth = async () => {
@@ -815,6 +845,14 @@ function AdminPage() {
           <div className="flex flex-wrap gap-3">
             <button onClick={loadLeads} className="rounded-2xl bg-white px-5 py-3 font-black text-slate-700 shadow ring-1 ring-slate-100">Rafraîchir</button>
             <button onClick={exportCsv} className="rounded-2xl bg-white px-5 py-3 font-black text-violet-700 shadow ring-1 ring-violet-100">Exporter CSV</button>
+            {isAdmin && selectedLeadIds.length > 0 && (
+  <button
+    onClick={deleteSelectedLeads}
+    className="rounded-2xl bg-red-600 px-5 py-3 font-black text-white shadow"
+  >
+    Supprimer {selectedLeadIds.length} lead(s)
+  </button>
+)}
             <button onClick={() => supabase.auth.signOut()} className="rounded-2xl bg-slate-900 px-5 py-3 font-black text-white">Se déconnecter</button>
           </div>
         </div>
@@ -915,6 +953,7 @@ function AdminPage() {
                   <table className="w-full min-w-[1120px] border-collapse text-left text-[13px]">
                     <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
                       <tr>
+                        <th className="px-4 py-3">Sélection</th>
                         <th className="px-4 py-3">Nom</th>
                         <th className="px-4 py-3">Téléphone</th>
                         <th className="px-4 py-3">Email</th>
@@ -931,6 +970,15 @@ function AdminPage() {
                     <tbody className="divide-y divide-slate-100">
                       {filteredLeads.map((lead) => (
                         <tr key={lead.id} onClick={() => setSelectedLead(lead)} className="cursor-pointer transition hover:bg-violet-50">
+                          <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={selectedLeadIds.includes(lead.id)}
+                              onChange={() => toggleLeadSelection(lead.id)}
+                              className="h-4 w-4 accent-violet-600"
+                            />
+                          </td>
+                          
                           <td className="max-w-[160px] px-4 py-3 font-black text-[#08243a]">
                             <span className="line-clamp-2">{lead.full_name || "Sans nom"}</span>
                           </td>
@@ -1446,7 +1494,10 @@ function Footer({ go }) {
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 text-xl font-black text-white">P</div>
               <p className="text-2xl font-black">PrimUnion</p>
             </div>
-            <p className="mt-3 text-slate-400">Plateforme marketing rénovation énergétique.</p>
+            <p className="mt-3 text-slate-400">
+  Plateforme marketing rénovation énergétique.<br />
+  Partenaires et installateurs certifiés RGE.
+</p>
           </div>
 
           <div className="flex flex-col gap-3 font-bold text-slate-300">
@@ -1467,10 +1518,6 @@ function Footer({ go }) {
         <div className="mt-10 border-t border-white/10 pt-6 text-center text-sm text-slate-500">
           © 2018 – 2026 PrimUnion. Tous droits réservés.
         </div>
-        <p className="mt-3 text-slate-400">
-  Plateforme marketing rénovation énergétique.<br />
-  Partenaires et installateurs certifiés RGE.
-  </p>
       </div>
     </footer>
   );
