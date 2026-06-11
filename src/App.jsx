@@ -1,3 +1,4 @@
+import * as XLSX from "xlsx";
 import { supabase } from "./lib/supabase";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -776,34 +777,31 @@ const deleteSelectedLeads = async () => {
     return list;
   }, [remindersToday.length, overdueReminders.length, visibleBaseLeads.length, leads, isAdmin, currentUser]);
 
-  const exportCsv = () => {
-    const headers = ["Nom", "Téléphone", "Email", "Code postal", "Revenus", "Catégorie", "Assigné à", "Statut", "Rappel", "Date", "Note"];
-    const rows = filteredLeads.map((lead) => [
-      lead.full_name || "",
-      lead.phone || "",
-      lead.email || "",
-      lead.city || "",
-      lead.tax_income || "",
-      lead.eligibility_category || "",
-      lead.assigned_to || "Non assigné",
-      STATUS_LABELS[lead.call_status] || "À appeler",
-      lead.reminder_date || "",
-      lead.created_at ? new Date(lead.created_at).toLocaleDateString("fr-FR") : "",
-      lead.internal_note || "",
-    ]);
+ const exportExcel = () => {
+  const rows = filteredLeads.map((lead) => ({
+    Nom: lead.full_name || "",
+    Téléphone: lead.phone || "",
+    Email: lead.email || "",
+    "Code postal": lead.city || "",
+    Revenus: lead.tax_income || "",
+    Catégorie: lead.eligibility_category || "",
+    "Assigné à": lead.assigned_to || "Non assigné",
+    Statut: STATUS_LABELS[lead.call_status] || "À appeler",
+    Rappel: lead.reminder_date || "",
+    Date: lead.created_at
+      ? new Date(lead.created_at).toLocaleDateString("fr-FR")
+      : "",
+    Note: lead.internal_note || "",
+  }));
 
-    const csv = [headers, ...rows]
-      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(";"))
-      .join("\n");
+  const worksheet = XLSX.utils.json_to_sheet(rows);
 
-    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `leads-primunion-${today}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Leads");
+
+  XLSX.writeFile(workbook, `leads-primunion-${today}.xlsx`);
+};
 
 
 
@@ -883,7 +881,7 @@ const startResize = (column, e) => {
 
           <div className="flex flex-wrap gap-3">
             <button onClick={loadLeads} className="rounded-2xl bg-white px-5 py-3 font-black text-slate-700 shadow ring-1 ring-slate-100">Rafraîchir</button>
-            <button onClick={exportCsv} className="rounded-2xl bg-white px-5 py-3 font-black text-violet-700 shadow ring-1 ring-violet-100">Exporter CSV</button>
+            <button onClick={exportExcel} className="rounded-2xl bg-white px-5 py-3 font-black text-violet-700 shadow ring-1 ring-violet-100">Exporter Excel</button>
             {isAdmin && selectedLeadIds.length > 0 && (
   <button
     onClick={deleteSelectedLeads}
