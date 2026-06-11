@@ -434,7 +434,7 @@ function SimulationPage({ go }) {
                   <label className="mb-2 block font-black text-[#08243a]">Choisissez une heure</label>
                   <select value={data.preferred_time} onChange={(e) => setData({ ...data, preferred_time: e.target.value })} className="w-full max-w-full rounded-2xl border-2 border-slate-200 bg-white p-4 text-base font-bold text-[#08243a] outline-none focus:border-violet-500 sm:p-5 sm:text-lg">
                     <option value="">Sélectionner une heure</option>
-                    {["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00"].map((hour) => (
+                    {["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00"].map((hour) => (
                       <option key={hour} value={hour}>{hour}</option>
                     ))}
                   </select>
