@@ -34,6 +34,7 @@ const STATUS_LABELS = {
   appele: "Appelé",
   injoignable: "Injoignable",
   rappel_prevu: "Rappel prévu",
+  demande_document: "Demande de document",
   termine: "Terminé",
   ne_veut_pas_etre_contacte: "Ne veut pas être contacté",
 };
