@@ -26,7 +26,7 @@ const ADMIN_USERS = {
   "yeoshouahaddad@yahoo.com": { name: "Josh", role: "admin" },
   "davidmyara12@gmail.com": { name: "David", role: "admin" },
 
-  "mikhelmyara@gmail.com": { name: "Ilan", role: "worker", campaign: "sarah" },
+  "mikhelmyara@gmail.com": { name: "Ilan", role: "worker", campaign: "Ilan" },
 };
 
 const ASSOCIATES = ["Josh", "Mikhael", "David", "Ilan"];
