@@ -25,6 +25,8 @@ const ADMIN_USERS = {
   "mikhaelmyara@gmail.com": { name: "Mikhael", role: "admin" },
   "yeoshouahaddad@yahoo.com": { name: "Josh", role: "admin" },
   "davidmyara12@gmail.com": { name: "David", role: "admin" },
+
+  "travailleur1@email.com": { name: "Sarah", role: "worker", campaign: "sarah" },
 };
 
 const ASSOCIATES = ["Josh", "Mikhael", "David"];
@@ -225,6 +227,8 @@ function getEligibilityCategory({ city, household_size, tax_income }) {
 }
 
 function SimulationPage({ go }) {
+  const params = new URLSearchParams(window.location.search);
+const campaign = params.get("campaign");
   const steps = [
     { type: "choice", key: "owner_status", title: "Concernant votre logement, vous êtes ?", hint: "Cette information conditionne les aides auxquelles vous avez droit.", options: [{ label: "Propriétaire", emoji: "🏠", desc: "J'occupe ou je loue mon bien" }, { label: "Locataire", emoji: "🔑", desc: "Je loue mon logement" }] },
     { type: "choice", key: "housing_type", title: "Quel est votre type de logement ?", options: [{ label: "Maison", emoji: "🏡", desc: "Maison individuelle" }, { label: "Appartement", emoji: "🏢", desc: "En immeuble collectif" }] },
@@ -265,13 +269,17 @@ function SimulationPage({ go }) {
       call_status: finalData.wants_contact === "Non" ? "ne_veut_pas_etre_contacte" : "a_appeler",
     };
 
-    const { error } = await supabase.from("leads").insert([{ ...finalLead, ...eligibility, household_size: String(finalData.household_size) }]);
-
-    if (error) {
-      console.error(error);
-      alert(error.message);
-      return;
-    }
+    const { error } = await supabase.from("leads").insert([
+  {
+    ...finalLead,
+    ...eligibility,
+    household_size: String(finalData.household_size),
+    campaign_source: campaign || null,
+assigned_to: campaign
+  ? campaign.charAt(0).toUpperCase() + campaign.slice(1)
+  : null,
+  },
+]);
 
     setShowSuccess(true);
     setStep(0);
