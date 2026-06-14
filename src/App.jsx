@@ -26,10 +26,10 @@ const ADMIN_USERS = {
   "yeoshouahaddad@yahoo.com": { name: "Josh", role: "admin" },
   "davidmyara12@gmail.com": { name: "David", role: "admin" },
 
-  "travailleur1@email.com": { name: "Sarah", role: "worker", campaign: "sarah" },
+  "mikhelmyara@gmail.com": { name: "Sarah", role: "worker", campaign: "sarah" },
 };
 
-const ASSOCIATES = ["Josh", "Mikhael", "David"];
+const ASSOCIATES = ["Josh", "Mikhael", "David", "Sarah"];
 
 const STATUS_LABELS = {
   a_appeler: "À appeler",
@@ -46,8 +46,10 @@ const STATUS_STYLES = {
   appele: "bg-green-100 text-green-700",
   injoignable: "bg-red-100 text-red-700",
   rappel_prevu: "bg-blue-100 text-blue-700",
+  demande_document: "bg-purple-100 text-purple-700",
   termine: "bg-slate-900 text-white",
   ne_veut_pas_etre_contacte: "bg-slate-100 text-slate-600",
+ 
 };
 
 const PIPELINE_COLUMNS = [
@@ -270,26 +272,21 @@ const campaign = params.get("campaign");
     };
 
     const { error } = await supabase.from("leads").insert([
-
   {
-
     ...finalLead,
-
     ...eligibility,
-
     household_size: String(finalData.household_size),
-
     campaign_source: campaign || null,
-
     assigned_to: campaign
-
       ? campaign.charAt(0).toUpperCase() + campaign.slice(1)
-
       : null,
-
   },
-
 ]);
+if (error) {
+  console.error(error);
+  alert(error.message);
+  return;
+}
 
     setShowSuccess(true);
     setStep(0);
@@ -714,10 +711,16 @@ const deleteSelectedLeads = async () => {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   const visibleBaseLeads = useMemo(() => {
-    if (!currentUser) return [];
-    if (currentUser.role === "admin") return leads;
-    return leads.filter((lead) => lead.assigned_to === currentUser.name);
-  }, [leads, currentUser]);
+  if (!currentUser) return [];
+
+  if (currentUser.role === "admin") return leads;
+
+  return leads.filter(
+    (lead) =>
+      lead.campaign_source?.toLowerCase() ===
+      currentUser.campaign?.toLowerCase()
+  );
+}, [leads, currentUser]);
 
   const filteredLeads = useMemo(() => {
     return visibleBaseLeads
