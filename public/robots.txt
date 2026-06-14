@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://primunion.vercel.app/sitemap.xml
