@@ -270,15 +270,25 @@ const campaign = params.get("campaign");
     };
 
     const { error } = await supabase.from("leads").insert([
+
   {
+
     ...finalLead,
+
     ...eligibility,
+
     household_size: String(finalData.household_size),
+
     campaign_source: campaign || null,
-assigned_to: campaign
-  ? campaign.charAt(0).toUpperCase() + campaign.slice(1)
-  : null,
+
+    assigned_to: campaign
+
+      ? campaign.charAt(0).toUpperCase() + campaign.slice(1)
+
+      : null,
+
   },
+
 ]);
 
     setShowSuccess(true);
