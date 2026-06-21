@@ -15,12 +15,13 @@ import {
   Euro,
 } from "lucide-react";
 
-/*
-  IMPORTANT :
-  Remplace les emails ci-dessous par les vrais emails Supabase de vos 3 comptes.
-  Mikhael = admin : voit tout
-  Josh / David = associés : voient principalement leurs leads
-*/
+const META_PIXEL_ID = "1021351157002707";
+
+function trackMetaPixel(eventName) {
+  if (typeof window !== "undefined" && window.fbq) {
+    window.fbq("track", eventName);
+  }
+}
 const ADMIN_USERS = {
   "mikhaelmyara@gmail.com": { name: "Mikhael", role: "admin" },
   "yeoshouahaddad@yahoo.com": { name: "Josh", role: "admin" },
@@ -69,7 +70,29 @@ export default function App() {
     setMenuOpen(false);
     window.scrollTo(0, 0);
   };
+useEffect(() => {
+  if (window.fbq) return;
 
+  !(function (f, b, e, v, n, t, s) {
+    if (f.fbq) return;
+    n = f.fbq = function () {
+      n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+    };
+    if (!f._fbq) f._fbq = n;
+    n.push = n;
+    n.loaded = true;
+    n.version = "2.0";
+    n.queue = [];
+    t = b.createElement(e);
+    t.async = true;
+    t.src = v;
+    s = b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t, s);
+  })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+
+  window.fbq("init", META_PIXEL_ID);
+  window.fbq("track", "PageView");
+}, []);
   return (
     <div className="min-h-screen bg-[#f7f8ff] text-slate-950">
       <Navbar page={page} go={go} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
@@ -287,6 +310,7 @@ if (error) {
   alert(error.message);
   return;
 }
+trackMetaPixel("Lead");
 
     setShowSuccess(true);
     setStep(0);
