@@ -315,8 +315,13 @@ if (error) {
   alert(error.message);
   return;
 }
-trackMetaPixel("Lead");
+if (window.fbq) {
 
+  window.fbq("trackCustom", "PrimUnionLead");
+
+}
+
+setShowSuccess(true);
     setShowSuccess(true);
     setStep(0);
     window.scrollTo(0, 0);
