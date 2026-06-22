@@ -18,8 +18,13 @@ import {
 const META_PIXEL_ID = "1021351157002707";
 
 function trackMetaPixel(eventName) {
+  console.log("Tentative Meta Pixel:", eventName);
+
   if (typeof window !== "undefined" && window.fbq) {
     window.fbq("track", eventName);
+    console.log("Meta Pixel envoyé:", eventName);
+  } else {
+    console.log("Meta Pixel PAS prêt");
   }
 }
 const ADMIN_USERS = {
