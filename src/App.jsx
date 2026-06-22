@@ -315,19 +315,7 @@ if (error) {
   alert(error.message);
   return;
 }
-console.log("SUPABASE OK - tentative envoi Lead Meta");
-
-if (typeof window !== "undefined" && window.fbq) {
-
-  window.fbq("track", "Lead");
-
-  console.log("LEAD META ENVOYÉ");
-
-} else {
-
-  console.log("FBQ INTROUVABLE");
-
-}
+trackMetaPixel("Lead");
 
     setShowSuccess(true);
     setStep(0);
