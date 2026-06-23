@@ -59,13 +59,18 @@ const PIPELINE_COLUMNS = [
 export default function App() {
   const [page, setPage] = useState("home");
   const [menuOpen, setMenuOpen] = useState(false);
-
+const [cookieConsent, setCookieConsent] = useState(() => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("primunion_cookie_consent");
+});
   const go = (target) => {
     setPage(target);
     setMenuOpen(false);
     window.scrollTo(0, 0);
   };
-useEffect(() => {
+  
+  const loadMetaPixel = () => {
+  if (typeof window === "undefined") return;
   if (window.fbq) return;
 
   !(function (f, b, e, v, n, t, s) {
@@ -87,8 +92,15 @@ useEffect(() => {
 
   window.fbq("init", META_PIXEL_ID);
   window.fbq("track", "PageView");
-}, []);
-  return (
+};
+
+useEffect(() => {
+  if (cookieConsent === "accepted") {
+    loadMetaPixel();
+  }
+}, [cookieConsent]);
+
+          return (
     <div className="min-h-screen bg-[#f7f8ff] text-slate-950">
       <Navbar page={page} go={go} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
@@ -98,11 +110,29 @@ useEffect(() => {
       {page === "contact" && <ContactPage />}
       {page === "legal" && <LegalPage go={go} />}
       {page === "privacy" && <PrivacyPage go={go} />}
+      {page === "cgu" && <CguPage go={go} />}
+      {page === "cookies" && <CookiesPage go={go} />}
 
       <Footer go={go} />
+      {!cookieConsent && (
+  <CookieBanner
+    go={go}
+    onAccept={() => {
+      localStorage.setItem("primunion_cookie_consent", "accepted");
+      setCookieConsent("accepted");
+    }}
+    onRefuse={() => {
+      localStorage.setItem("primunion_cookie_consent", "refused");
+      setCookieConsent("refused");
+    }}
+  />
+)}
+      
     </div>
   );
 }
+
+
 
 function Navbar({ page, go, menuOpen, setMenuOpen }) {
   return (
@@ -268,6 +298,7 @@ const campaign = params.get("campaign");
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState("forward");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
   const [data, setData] = useState({ household_size: 1, full_name: "", email: "", phone: "", preferred_date: "", preferred_time: "" });
 
   const current = steps[step];
@@ -276,7 +307,7 @@ const campaign = params.get("campaign");
   const isPostalCodeValid = /^[0-9]{5}$/.test(data.city || "");
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email || "");
   const isPhoneValid = /^(?:(?:\+33|0033)[1-9](?:\d{2}){4}|0[1-9](?:\d{2}){4})$/.test((data.phone || "").replace(/\s/g, ""));
-  const isContactValid = data.full_name.trim().length >= 2 && isEmailValid && isPhoneValid;
+  const isContactValid = data.full_name.trim().length >= 2 && isEmailValid && isPhoneValid && consentChecked;
   const isAppointmentValid = data.preferred_date && data.preferred_time;
   const canContinue = current.type === "input" ? isPostalCodeValid : current.type === "contact" ? isContactValid : current.type === "appointment" ? isAppointmentValid : true;
 
@@ -287,6 +318,8 @@ const campaign = params.get("campaign");
       preferred_date: finalData.preferred_date || null,
       preferred_time: finalData.preferred_time || null,
       call_status: finalData.wants_contact === "Non" ? "ne_veut_pas_etre_contacte" : "a_appeler",
+      rgpd_consent: true,
+      rgpd_consent_date: new Date().toISOString(),
     };
 
     const { error } = await supabase.from("leads").insert([
@@ -455,6 +488,20 @@ if (typeof window !== "undefined" && window.fbq) {
                   <FieldInput value={data.email} onChange={(v) => setData({ ...data, email: v })} placeholder="Adresse email *" icon="✉️" type="email" error={data.email && !isEmailValid ? "Email invalide." : ""} />
                   <FieldInput value={data.phone} onChange={(v) => setData({ ...data, phone: v })} placeholder="Numéro de téléphone *" icon="📞" type="tel" error={data.phone && !isPhoneValid ? "Numéro français invalide. Exemple : 0612345678" : ""} />
                 </div>
+
+              <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-2xl border-2 border-slate-200 p-4 transition hover:border-violet-400">
+                  <input
+                    type="checkbox"
+                    checked={consentChecked}
+                    onChange={(e) => setConsentChecked(e.target.checked)}
+                    className="mt-0.5 h-5 w-5 shrink-0 accent-violet-600"
+                  />
+                  <span className="text-sm font-semibold leading-6 text-slate-600">
+                    J'accepte que PrimUnion collecte et traite mes données personnelles (nom, email, téléphone, informations logement) pour réaliser ma simulation et me recontacter. Conformément au RGPD, je peux retirer mon consentement à tout moment en écrivant à <strong>mikhaelmyara@gmail.com</strong>. *
+                  </span>
+                </label>
+
+
 
                 <button disabled={!canContinue} onClick={next} className={`mt-6 flex w-full items-center justify-center gap-2 rounded-2xl py-5 text-lg font-black transition ${canContinue ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg shadow-violet-200" : "cursor-not-allowed bg-slate-200 text-slate-400"}`}>
                   Recevoir mon estimation <ArrowRight size={20} />
@@ -1425,6 +1472,36 @@ function InfoBox({ label, value, isPhone = false, isEmail = false }) {
 }
 
 function ContactPage() {
+  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "", consent: false });
+  const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+
+  const isValid = form.name.trim().length >= 2
+    && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
+    && form.message.trim().length >= 10
+    && form.consent;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!isValid) return;
+    setSending(true);
+    setError("");
+    const { error: dbError } = await supabase.from("contact_messages").insert([{
+      full_name: form.name,
+      email: form.email,
+      phone: form.phone || null,
+      message: form.message,
+      rgpd_consent: true,
+      rgpd_consent_date: new Date().toISOString(),
+    }]);
+    setSending(false);
+    if (dbError) {
+      setError("Une erreur est survenue. Veuillez nous écrire directement à mikhaelmyara@gmail.com");
+      return;
+    }
+    setSubmitted(true);
+  };
   return (
     <main className="mx-auto max-w-7xl px-5 py-20">
       <div className="grid gap-10 lg:grid-cols-2">
@@ -1435,20 +1512,40 @@ function ContactPage() {
           <div className="mt-10 space-y-5">
             <Info icon={<Phone />} text="+34 657 398 227" />
             <Info icon={<Mail />} text="mikhaelmyara@gmail.com" />
-            <Info icon={<MapPin />} text="France/Espagne" />
+            <Info icon={<MapPin />} text="France / Espagne" />
           </div>
         </div>
-
-        <form className="rounded-[2rem] bg-white p-8 shadow-xl">
-          <div className="grid gap-4">
-            <input className="rounded-2xl border p-4" placeholder="Nom complet" />
-            <input className="rounded-2xl border p-4" placeholder="Email" />
-            <input type="tel" inputMode="numeric" autoComplete="tel" className="rounded-2xl border p-4" placeholder="Téléphone" />
-            <textarea className="min-h-36 rounded-2xl border p-4" placeholder="Message" />
-            <button className="rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 py-4 font-black text-white">Envoyer</button>
-          </div>
-        </form>
+      {submitted ? (
+          <div className="flex items-center justify-center rounded-[2rem] bg-white p-8 shadow-xl">
+            <div className="text-center">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-r from-violet-600 to-blue-600 text-4xl text-white">✓</div>
+              <h2 className="mt-6 text-2xl font-black text-[#08243a]">Message envoyé !</h2>
+              <p className="mt-3 text-slate-600">Nous vous répondrons dans les plus brefs délais.</p>
+            </div>
+        
+        
       </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="rounded-[2rem] bg-white p-8 shadow-xl">
+            <div className="grid gap-4">
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="rounded-2xl border-2 border-slate-200 p-4 font-bold outline-none focus:border-violet-500" placeholder="Nom complet *" required />
+              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="rounded-2xl border-2 border-slate-200 p-4 font-bold outline-none focus:border-violet-500" placeholder="Adresse email *" required />
+              <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/[^0-9+\s]/g, "") })} inputMode="numeric" autoComplete="tel" className="rounded-2xl border-2 border-slate-200 p-4 font-bold outline-none focus:border-violet-500" placeholder="Téléphone (optionnel)" />
+              <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="min-h-36 rounded-2xl border-2 border-slate-200 p-4 font-bold outline-none focus:border-violet-500" placeholder="Votre message *" required />
+              <label className="flex cursor-pointer items-start gap-3">
+                <input type="checkbox" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} className="mt-1 h-4 w-4 accent-violet-600" />
+                <span className="text-sm font-semibold text-slate-500">
+                  J'accepte que PrimUnion utilise mes données pour traiter ma demande, conformément à la <button type="button" onClick={() => window.location.hash = "privacy"} className="text-violet-600 underline">politique de confidentialité</button>. *
+                </span>
+              </label>
+              {error && <p className="rounded-xl bg-red-50 p-3 text-sm font-bold text-red-600">{error}</p>}
+              <button type="submit" disabled={!isValid || sending} className={`rounded-2xl py-4 font-black text-white transition ${isValid && !sending ? "bg-gradient-to-r from-violet-600 to-blue-600 shadow-lg" : "cursor-not-allowed bg-slate-200 text-slate-400"}`}>
+                {sending ? "Envoi en cours…" : "Envoyer le message"}
+              </button>
+            </div>
+          </form>
+        )}
+              </div>
     </main>
   );
 }
@@ -1630,30 +1727,57 @@ function LegalBlock({ title, children }) {
 
 function LegalPage({ go }) {
   return (
-    <LegalLayout go={go} badge="Informations légales" title="Mentions légales" intro="Conformément à la loi pour la confiance dans l'économie numérique (LCEN), voici les informations relatives à l'éditeur et à l'hébergeur de ce site.">
-      <LegalBlock title="1. Éditeur du site">
-        <p>Le site PrimUnion est édité par <strong>Mikhael Myara</strong>.</p>
-        <p>Contact : Mikhael Myara — mikhaelmyara@gmail.com — +34 657 398 227.</p>
+<LegalLayout go={go} badge="Informations légales" title="Mentions légales" intro="Conformément à la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN), voici les informations relatives à l'éditeur et à l'hébergeur du site primunion.vercel.app">      
+<LegalBlock title="1. Éditeur du site">
+        <p><strong>Raison sociale :</strong> PrimUnion — exploitation en nom propre</p>
+        <p><strong>Responsable de la publication :</strong> Mikhael Myara</p>
+        <p><strong>Adresse :</strong> France / Espagne</p>
+        <p><strong>Email :</strong> mikhaelmyara@gmail.com</p>
+        <p><strong>Téléphone :</strong> +34 657 398 227</p>
+        <p className="mt-2 rounded-xl bg-blue-50 p-3 text-sm font-semibold text-blue-700">
+          PrimUnion est une plateforme marketing de mise en relation dans le domaine de la rénovation énergétique. Elle n'intervient pas directement dans la réalisation des travaux mais oriente les particuliers vers des partenaires certifiés RGE.
+        </p>
       </LegalBlock>
-
-      <LegalBlock title="2. Hébergeur">
-        <p>Le site est hébergé par <strong>Vercel Inc.</strong>, 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis.</p>
+      
+      <LegalBlock title="2. Hébergement"> 
+        <p><strong>Hébergeur frontend :</strong> Vercel Inc., 340 Pine Street Suite 900, San Francisco, CA 94104, États-Unis. Site : vercel.com</p>
+        <p><strong>Base de données :</strong> Supabase, Inc., 970 Toa Payoh North, #07-04, Singapore 318992. Données stockées sur des serveurs situés dans l'Union européenne (région eu-west-1). Site : supabase.com</p>
       </LegalBlock>
 
       <LegalBlock title="3. Activité">
-        <p>PrimUnion est une plateforme de mise en relation et d'information dans le domaine de la rénovation énergétique.</p>
-      </LegalBlock>
+        <p>PrimUnion propose :</p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li>Un simulateur d'éligibilité aux aides à la rénovation énergétique (MaPrimeRénov', CEE) ;</li>
+          <li>Une mise en relation entre particuliers et professionnels certifiés RGE ;</li>
+          <li>Un accompagnement dans les démarches administratives liées à l'obtention d'aides.</li>
+        </ul>
+        <p>Les estimations produites par le simulateur sont <strong>indicatives</strong> et ne constituent pas un engagement contractuel. Les montants réels peuvent varier selon la situation individuelle, les plafonds en vigueur et les décisions des organismes compétents (ANAH, ADEME).</p>      </LegalBlock>
 
       <LegalBlock title="4. Propriété intellectuelle">
-        <p>L'ensemble des contenus présents sur ce site est protégé par le droit de la propriété intellectuelle.</p>
+<p>L'ensemble des éléments constitutifs du site (textes, visuels, logo, architecture, code source) est protégé par le droit de la propriété intellectuelle français et international.</p>
+        <p>Toute reproduction, représentation, modification, publication ou adaptation, totale ou partielle, sans autorisation écrite préalable de PrimUnion, est strictement interdite sous peine de poursuites judiciaires.</p>      </LegalBlock>
+
+<LegalBlock title="5. Liens hypertextes">
+        <p>Le site peut contenir des liens vers des sites tiers. PrimUnion ne saurait être responsable du contenu de ces sites, ni des pratiques de confidentialité qui y sont appliquées.</p>      </LegalBlock>
+
+ <LegalBlock title="6. Limitation de responsabilité">
+        <p>PrimUnion s'efforce d'assurer l'exactitude des informations diffusées sur le site. Cependant, PrimUnion ne saurait être tenu responsable :</p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li>Des erreurs ou omissions dans le contenu ;</li>
+          <li>Des interruptions temporaires d'accès au site ;</li>
+          <li>Des décisions prises par l'utilisateur sur la base des estimations indicatives fournies ;</li>
+          <li>De tout dommage résultant d'une intrusion frauduleuse d'un tiers ayant entraîné une modification des données.</li>
+        </ul>      </LegalBlock>
+        <LegalBlock title="7. Protection des données personnelles">
+        <p>Le traitement des données personnelles collectées sur ce site est régi par la <button onClick={() => go("privacy")} className="font-black text-violet-700 underline">Politique de confidentialité</button> disponible sur ce site. PrimUnion respecte le Règlement Général sur la Protection des Données (RGPD — Règlement UE 2016/679) et la loi Informatique et Libertés n° 78-17 du 6 janvier 1978 modifiée.</p>
       </LegalBlock>
 
-      <LegalBlock title="5. Responsabilité">
-        <p>Les estimations fournies par le simulateur sont données à titre indicatif.</p>
+      <LegalBlock title="8. Cookies">
+        <p>Ce site utilise des cookies et traceurs. Pour en savoir plus, consultez notre <button onClick={() => go("cookies")} className="font-black text-violet-700 underline">Politique de gestion des cookies</button>.</p>
       </LegalBlock>
 
-      <LegalBlock title="6. Droit applicable">
-        <p>Les présentes mentions légales sont régies par le droit français.</p>
+      <LegalBlock title="9. Droit applicable et juridiction compétente">
+        <p>Les présentes mentions légales sont régies par le droit français. En cas de litige, et après tentative de résolution amiable, les tribunaux français seront seuls compétents.</p>
       </LegalBlock>
     </LegalLayout>
   );
@@ -1661,29 +1785,303 @@ function LegalPage({ go }) {
 
 function PrivacyPage({ go }) {
   return (
-    <LegalLayout go={go} badge="Vos données personnelles" title="Politique de confidentialité" intro="PrimUnion accorde une grande importance à la protection de vos données.">
+    <LegalLayout go={go} badge="Vos données personnelles" title="Politique de confidentialité" intro="PrimUnion s'engage à protéger votre vie privée et à traiter vos données personnelles conformément au Règlement Général sur la Protection des Données (RGPD — UE 2016/679) et à la loi Informatique et Libertés.">
+
       <LegalBlock title="1. Responsable du traitement">
-        <p>Le responsable du traitement des données est <strong>Mikhael Myara</strong>. Contact : mikhaelmyara@gmail.com</p>
+        <p><strong>Identité :</strong> Mikhael Myara, exploitant de PrimUnion</p>
+        <p><strong>Email :</strong> mikhaelmyara@gmail.com</p>
+        <p><strong>Téléphone :</strong> +34 657 398 227</p>
+        <p className="mt-2 rounded-xl bg-violet-50 p-3 text-sm font-semibold text-violet-700">
+          Pour toute demande relative à vos données personnelles, contactez-nous à l'adresse ci-dessus en précisant l'objet « Demande RGPD ».
+        </p>
       </LegalBlock>
-      <LegalBlock title="2. Données collectées">
+
+      <LegalBlock title="2. Données collectées et finalités">
+        <p>Nous collectons vos données uniquement dans les cas suivants :</p>
+
+        <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="p-3 text-left font-black text-slate-700">Données</th>
+                <th className="p-3 text-left font-black text-slate-700">Finalité</th>
+                <th className="p-3 text-left font-black text-slate-700">Base légale</th>
+                <th className="p-3 text-left font-black text-slate-700">Durée</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              <tr>
+                <td className="p-3 font-semibold">Nom, email, téléphone, code postal, composition du foyer, revenus fiscaux, informations logement</td>
+                <td className="p-3 text-slate-600">Réalisation de la simulation d'éligibilité aux aides à la rénovation et prise de contact commerciale</td>
+                <td className="p-3 text-slate-600">Consentement (art. 6.1.a RGPD) — case cochée obligatoire dans le formulaire</td>
+                <td className="p-3 text-slate-600">3 ans à compter de la collecte, sauf demande de suppression anticipée</td>
+              </tr>
+              <tr>
+                <td className="p-3 font-semibold">Nom, email, téléphone (optionnel), message</td>
+                <td className="p-3 text-slate-600">Traitement des demandes de contact envoyées via le formulaire</td>
+                <td className="p-3 text-slate-600">Consentement (art. 6.1.a RGPD)</td>
+                <td className="p-3 text-slate-600">1 an à compter de la dernière interaction</td>
+              </tr>
+              <tr>
+                <td className="p-3 font-semibold">Données de navigation (cookies analytiques / traceurs Meta Pixel)</td>
+                <td className="p-3 text-slate-600">Mesure d'audience et optimisation des campagnes publicitaires Meta (Facebook/Instagram)</td>
+                <td className="p-3 text-slate-600">Consentement (art. 6.1.a RGPD) — bandeau cookies</td>
+                <td className="p-3 text-slate-600">13 mois maximum</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </LegalBlock>
+
+      <LegalBlock title="3. Destinataires des données">
+        <p>Vos données sont destinées exclusivement à :</p>
+        <ul className="list-disc space-y-2 pl-6">
+          <li><strong>L'équipe interne PrimUnion</strong> — pour le traitement de votre dossier et la prise de contact ;</li>
+          <li><strong>Supabase, Inc.</strong> — prestataire d'hébergement de base de données. Les données sont hébergées sur des serveurs situés dans l'Union européenne (région eu-west). Supabase est conforme au RGPD. <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">Politique de confidentialité Supabase</a> ;</li>
+          <li><strong>Meta Platforms Ireland Ltd.</strong> — uniquement si vous avez accepté les cookies analytiques. Les données transférées via le Meta Pixel sont régies par le Privacy Shield et les Clauses Contractuelles Types (CCT) approuvées par la Commission européenne ;</li>
+          <li><strong>Partenaires installateurs RGE</strong> — votre dossier peut être transmis à des partenaires certifiés RGE pour établir un devis, uniquement avec votre accord exprès lors d'un échange téléphonique.</li>
+        </ul>
+        <p><strong>Vos données ne sont jamais vendues à des tiers.</strong></p>
+      </LegalBlock>
+
+      <LegalBlock title="4. Transferts hors Union européenne">
+        <p>Vercel Inc. (hébergeur frontend) est une société américaine. Les transferts sont encadrés par les Clauses Contractuelles Types (CCT) de la Commission européenne et les dispositions du Data Privacy Framework UE-États-Unis.</p>
+        <p>Meta Platforms Ireland Ltd. peut transférer des données aux États-Unis dans le cadre du Data Privacy Framework.</p>
+        <p>Supabase héberge les données de vos formulaires exclusivement en Union européenne.</p>
+      </LegalBlock>
+
+      <LegalBlock title="5. Vos droits (RGPD)">
+        <p>Conformément aux articles 15 à 22 du RGPD, vous disposez des droits suivants :</p>
+        <ul className="list-disc space-y-2 pl-6">
+          <li><strong>Droit d'accès</strong> — obtenir une copie de vos données personnelles ;</li>
+          <li><strong>Droit de rectification</strong> — corriger des données inexactes ou incomplètes ;</li>
+          <li><strong>Droit à l'effacement</strong> («&nbsp;droit à l'oubli&nbsp;») — demander la suppression de vos données ;</li>
+          <li><strong>Droit d'opposition</strong> — vous opposer au traitement de vos données à des fins de prospection commerciale ;</li>
+          <li><strong>Droit à la limitation du traitement</strong> — demander la suspension temporaire du traitement ;</li>
+          <li><strong>Droit à la portabilité</strong> — recevoir vos données dans un format structuré et lisible par machine ;</li>
+          <li><strong>Droit de retrait du consentement</strong> — retirer votre consentement à tout moment, sans que cela remette en cause la licéité du traitement effectué avant ce retrait.</li>
+        </ul>
+        <p className="mt-4 rounded-xl bg-green-50 p-4 font-semibold text-green-800">
+          Pour exercer l'un de ces droits, écrivez à <strong>mikhaelmyara@gmail.com</strong> en indiquant l'objet « Demande RGPD » et en joignant une copie de votre pièce d'identité. Délai de réponse : 30 jours maximum.
+        </p>
+        <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de la <strong>CNIL</strong> (Commission Nationale de l'Informatique et des Libertés) : <a href="https://www.cnil.fr/fr/plaintes" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">cnil.fr/fr/plaintes</a>.</p>
+      </LegalBlock>
+
+      <LegalBlock title="6. Cookies et traceurs">
+        <p>Un traceur est toute technologie permettant d'accéder à des informations stockées sur votre terminal (cookies, pixels, local storage, etc.).</p>
+
+        <p className="font-bold">Cookies strictement nécessaires (aucun consentement requis)</p>
         <ul className="list-disc space-y-1 pl-6">
-          <li>identité : nom, prénom ;</li>
-          <li>coordonnées : email, téléphone, code postal ;</li>
-          <li>informations logement et foyer.</li>
+          <li><code className="rounded bg-slate-100 px-1">primunion_cookie_consent</code> — mémorise votre choix de consentement aux cookies. Durée : 13 mois.</li>
+        </ul>
+
+        <p className="mt-3 font-bold">Cookies analytiques / publicitaires (consentement requis)</p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li><strong>Meta Pixel (fbp, fbc)</strong> — traceur publicitaire permettant de mesurer l'efficacité des campagnes Meta (Facebook/Instagram) et d'optimiser le ciblage publicitaire. Chargé uniquement après votre consentement explicite. Durée : 90 jours. Émetteur : Meta Platforms Ireland Ltd.</li>
+        </ul>
+
+        <p className="mt-3">Vous pouvez à tout moment modifier vos préférences via le bouton <strong>« Gérer mes cookies »</strong> en bas de page, ou en supprimant les données de votre navigateur (paramètres &gt; confidentialité).</p>
+      </LegalBlock>
+
+      <LegalBlock title="7. Sécurité des données">
+        <p>PrimUnion met en œuvre les mesures techniques et organisationnelles suivantes pour protéger vos données :</p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li>Chiffrement des données en transit (HTTPS/TLS) ;</li>
+          <li>Accès à la base de données restreint aux utilisateurs authentifiés via Supabase Auth ;</li>
+          <li>Politique de contrôle d'accès (Row Level Security) sur la base de données ;</li>
+          <li>Accès administrateur protégé par email + mot de passe ;</li>
+          <li>Aucun stockage de données de paiement (aucune transaction financière sur ce site).</li>
         </ul>
       </LegalBlock>
-      <LegalBlock title="3. Finalités">
-        <p>Vos données servent à réaliser votre simulation et à vous recontacter si vous l'acceptez.</p>
+
+      <LegalBlock title="8. Mineurs">
+        <p>Ce site est destiné aux adultes (propriétaires ou locataires majeurs). PrimUnion ne collecte pas sciemment de données personnelles concernant des personnes de moins de 18 ans.</p>
       </LegalBlock>
-      <LegalBlock title="4. Vos droits">
-        <p>Vous disposez d'un droit d'accès, de rectification, d'effacement, d'opposition et de portabilité.</p>
-      </LegalBlock>
-      <LegalBlock title="5. Sécurité">
-        <p>PrimUnion met en œuvre des mesures de protection appropriées.</p>
+
+      <LegalBlock title="9. Modifications de la politique">
+        <p>PrimUnion se réserve le droit de modifier la présente politique de confidentialité à tout moment. La date de dernière mise à jour est indiquée en bas de ce document. En continuant à utiliser le site après une modification, vous acceptez la politique mise à jour.</p>
       </LegalBlock>
     </LegalLayout>
   );
 }
+
+function CookieBanner({ onAccept, onRefuse, go }) {
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#081d33]/97 px-5 py-5 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex-1">
+          <p className="font-black text-white">🍪 Gestion des cookies</p>
+          <p className="mt-1 text-sm font-semibold text-slate-300">
+            Ce site utilise le Meta Pixel (traceur publicitaire) pour mesurer l'efficacité de nos campagnes. Ces cookies ne seront activés qu'avec votre consentement.{" "}
+            <button onClick={() => go("cookies")} className="text-violet-300 underline">En savoir plus</button>
+          </p>
+        </div>
+        <div className="flex shrink-0 gap-3">
+          <button onClick={onRefuse} className="rounded-2xl border border-white/20 px-6 py-3 text-sm font-black text-white transition hover:bg-white/10">
+            Refuser
+          </button>
+          <button onClick={onAccept} className="rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 px-6 py-3 text-sm font-black text-white shadow-lg transition hover:brightness-110">
+            Accepter les cookies
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CguPage({ go }) {
+  return (
+    <LegalLayout go={go} badge="Conditions d'utilisation" title="Conditions Générales d'Utilisation" intro="Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation du site PrimUnion. En utilisant ce site, vous acceptez les présentes CGU sans réserve.">
+
+      <LegalBlock title="1. Objet">
+        <p>PrimUnion est un service en ligne gratuit permettant aux particuliers résidant en France métropolitaine d'évaluer leur éligibilité aux aides à la rénovation énergétique (MaPrimeRénov', CEE, aides locales) et d'être mis en relation avec des professionnels certifiés RGE.</p>
+        <p className="rounded-xl bg-orange-50 p-3 text-sm font-semibold text-orange-800">
+          ⚠️ PrimUnion est une plateforme marketing de mise en relation. Elle ne garantit pas l'obtention des aides citées, qui dépendent de critères définis par l'ANAH et l'ADEME. Les montants affichés sont des estimations indicatives.
+        </p>
+      </LegalBlock>
+
+      <LegalBlock title="2. Accès au service">
+        <p>L'accès au simulateur est gratuit, sans inscription préalable, et ouvert à toute personne majeure résidant en France. Le service est disponible 24h/24 et 7j/7, sous réserve d'interruptions pour maintenance.</p>
+        <p>PrimUnion se réserve le droit de modifier, suspendre ou interrompre tout ou partie du service à tout moment sans préavis.</p>
+      </LegalBlock>
+
+      <LegalBlock title="3. Utilisation du simulateur">
+        <p>Le simulateur est conçu pour fournir une estimation personnalisée de vos droits aux aides à la rénovation énergétique. En l'utilisant, vous vous engagez à :</p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li>Fournir des informations exactes et sincères ;</li>
+          <li>Ne pas utiliser le service à des fins frauduleuses ou contraires à l'ordre public ;</li>
+          <li>Ne pas tenter de pirater, altérer ou surcharger les infrastructures du service ;</li>
+          <li>Ne pas utiliser le service pour collecter des informations sur d'autres utilisateurs.</li>
+        </ul>
+      </LegalBlock>
+
+      <LegalBlock title="4. Nature des estimations">
+        <p>Les montants d'aides affichés sont calculés sur la base des barèmes en vigueur au moment de la simulation (barème MaPrimeRénov' 2025). Ils ne constituent en aucun cas :</p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li>Un engagement de la part de PrimUnion, de l'ANAH, de l'ADEME ou de tout autre organisme ;</li>
+          <li>Un contrat ou une promesse de prestation ;</li>
+          <li>Un conseil juridique ou fiscal.</li>
+        </ul>
+        <p>L'obtention effective des aides est conditionnée à la conformité de votre dossier aux exigences des organismes attributeurs.</p>
+      </LegalBlock>
+
+      <LegalBlock title="5. Données personnelles">
+        <p>La collecte et le traitement de vos données personnelles sont régis par notre <button onClick={() => go("privacy")} className="font-black text-violet-700 underline">Politique de confidentialité</button>. En soumettant vos informations via le simulateur, vous consentez expressément au traitement de vos données aux fins décrites dans cette politique.</p>
+      </LegalBlock>
+
+      <LegalBlock title="6. Propriété intellectuelle">
+        <p>Tous les droits de propriété intellectuelle relatifs au site, aux outils, aux contenus et à la marque PrimUnion sont réservés. Aucune reproduction, même partielle, n'est autorisée sans accord écrit préalable.</p>
+      </LegalBlock>
+
+      <LegalBlock title="7. Responsabilité">
+        <p>PrimUnion ne saurait être tenu responsable :</p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li>Du refus ou de la réduction d'une aide par les organismes compétents ;</li>
+          <li>Des actions ou omissions des partenaires installateurs RGE ;</li>
+          <li>De toute perte financière liée à une décision prise sur la base des estimations indicatives ;</li>
+          <li>Des interruptions techniques du service.</li>
+        </ul>
+      </LegalBlock>
+
+      <LegalBlock title="8. Modification des CGU">
+        <p>PrimUnion se réserve le droit de modifier les présentes CGU à tout moment. La poursuite de l'utilisation du site après modification vaut acceptation des nouvelles CGU. La date de mise à jour est indiquée ci-dessous.</p>
+      </LegalBlock>
+
+      <LegalBlock title="9. Droit applicable">
+        <p>Les présentes CGU sont soumises au droit français. Tout litige sera soumis à la juridiction des tribunaux français compétents, après tentative de résolution amiable.</p>
+        <p>En cas de litige de consommation, vous pouvez recourir à la médiation conformément à l'article L.616-1 du Code de la consommation ou à la plateforme européenne de règlement en ligne des litiges : <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">ec.europa.eu/consumers/odr</a>.</p>
+      </LegalBlock>
+    </LegalLayout>
+  );
+}
+
+function CookiesPage({ go }) {
+  const currentConsent = localStorage.getItem("primunion_cookie_consent");
+
+  const handleReset = () => {
+    localStorage.removeItem("primunion_cookie_consent");
+    window.location.reload();
+  };
+
+  return (
+    <LegalLayout go={go} badge="Gestion des cookies" title="Politique de gestion des cookies" intro="Cette page vous informe sur les cookies et traceurs utilisés sur PrimUnion et vous permet de gérer vos préférences conformément à la réglementation RGPD et aux recommandations de la CNIL.">
+
+      <LegalBlock title="1. Qu'est-ce qu'un cookie ?">
+        <p>Un cookie est un petit fichier texte déposé sur votre terminal (ordinateur, smartphone, tablette) lors de votre visite sur un site web. Il permet au site de mémoriser certaines informations comme vos préférences ou votre parcours de navigation.</p>
+        <p>Les traceurs englobent aussi les pixels espions, le stockage local (localStorage), les empreintes de navigateur, etc.</p>
+      </LegalBlock>
+
+      <LegalBlock title="2. Cookies utilisés sur PrimUnion">
+        <div className="overflow-hidden rounded-2xl border border-slate-200">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="p-3 text-left font-black text-slate-700">Nom</th>
+                <th className="p-3 text-left font-black text-slate-700">Type</th>
+                <th className="p-3 text-left font-black text-slate-700">Finalité</th>
+                <th className="p-3 text-left font-black text-slate-700">Durée</th>
+                <th className="p-3 text-left font-black text-slate-700">Consentement</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              <tr>
+                <td className="p-3"><code className="rounded bg-slate-100 px-1 text-xs">primunion_cookie_consent</code></td>
+                <td className="p-3 text-slate-600">Fonctionnel</td>
+                <td className="p-3 text-slate-600">Mémoriser votre choix de consentement cookies</td>
+                <td className="p-3 text-slate-600">13 mois</td>
+                <td className="p-3"><span className="rounded-full bg-green-100 px-2 py-1 text-xs font-black text-green-700">Non requis</span></td>
+              </tr>
+              <tr>
+                <td className="p-3"><code className="rounded bg-slate-100 px-1 text-xs">_fbp</code>, <code className="rounded bg-slate-100 px-1 text-xs">_fbc</code></td>
+                <td className="p-3 text-slate-600">Publicitaire (Meta)</td>
+                <td className="p-3 text-slate-600">Mesure des conversions et ciblage publicitaire sur Facebook/Instagram</td>
+                <td className="p-3 text-slate-600">90 jours</td>
+                <td className="p-3"><span className="rounded-full bg-orange-100 px-2 py-1 text-xs font-black text-orange-700">Requis</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </LegalBlock>
+
+      <LegalBlock title="3. Gérer vos préférences">
+        <p>Votre choix actuel : <strong className={currentConsent === "accepted" ? "text-green-600" : currentConsent === "refused" ? "text-red-600" : "text-slate-500"}>
+          {currentConsent === "accepted" ? "Cookies publicitaires acceptés" : currentConsent === "refused" ? "Cookies publicitaires refusés" : "Aucun choix enregistré"}
+        </strong></p>
+
+        <button onClick={handleReset} className="mt-4 rounded-2xl border-2 border-violet-600 px-6 py-3 font-black text-violet-700 transition hover:bg-violet-50">
+          Réinitialiser mes préférences de cookies
+        </button>
+        <p className="mt-2 text-sm text-slate-500">Cela rechargera la page et affichera à nouveau le bandeau de consentement.</p>
+      </LegalBlock>
+
+      <LegalBlock title="4. Désactiver les cookies via votre navigateur">
+        <p>Vous pouvez également configurer votre navigateur pour bloquer les cookies :</p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li><strong>Chrome :</strong> Paramètres &gt; Confidentialité et sécurité &gt; Cookies</li>
+          <li><strong>Firefox :</strong> Options &gt; Vie privée et sécurité &gt; Protection renforcée</li>
+          <li><strong>Safari :</strong> Préférences &gt; Confidentialité &gt; Bloquer tous les cookies</li>
+          <li><strong>Edge :</strong> Paramètres &gt; Cookies et autorisations de site</li>
+        </ul>
+        <p>Attention : le blocage de certains cookies peut affecter le fonctionnement du site.</p>
+      </LegalBlock>
+
+      <LegalBlock title="5. Opposition au Meta Pixel">
+        <p>Pour vous opposer spécifiquement au traceur Meta Pixel, vous pouvez :</p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li>Utiliser l'outil de désactivation de Meta : <a href="https://www.facebook.com/help/568137493302217" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">facebook.com/help/568137493302217</a> ;</li>
+          <li>Installer l'extension navigateur Facebook Pixel Helper Opt-Out ;</li>
+          <li>Refuser les cookies publicitaires via notre bandeau.</li>
+        </ul>
+      </LegalBlock>
+
+      <LegalBlock title="6. Contact">
+        <p>Pour toute question relative aux cookies : <strong>mikhaelmyara@gmail.com</strong></p>
+        <p>Autorité de contrôle : <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">CNIL — cnil.fr</a></p>
+      </LegalBlock>
+    </LegalLayout>
+  );
+}
+
 
 function Footer({ go }) {
   return (
@@ -1713,11 +2111,19 @@ function Footer({ go }) {
             <p className="text-sm uppercase tracking-wide text-slate-500">Informations légales</p>
             <button onClick={() => go("legal")} className="text-left transition hover:text-white">Mentions légales</button>
             <button onClick={() => go("privacy")} className="text-left transition hover:text-white">Politique de confidentialité</button>
+            <button onClick={() => go("cgu")} className="text-left transition hover:text-white">CGU</button>
+            <button onClick={() => go("cookies")} className="text-left transition hover:text-white">Gestion des cookies</button>
           </div>
         </div>
 
         <div className="mt-10 border-t border-white/10 pt-6 text-center text-sm text-slate-500">
           © 2018 – 2026 PrimUnion. Tous droits réservés.
+           <span className="mx-2">·</span>
+          <button onClick={() => go("privacy")} className="transition hover:text-slate-300">Confidentialité</button>
+          <span className="mx-2">·</span>
+          <button onClick={() => go("cgu")} className="transition hover:text-slate-300">CGU</button>
+          <span className="mx-2">·</span>
+          <button onClick={() => go("cookies")} className="transition hover:text-slate-300">Cookies</button>
         </div>
       </div>
     </footer>
