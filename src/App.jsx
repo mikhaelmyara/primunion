@@ -313,7 +313,6 @@ if (typeof window !== "undefined" && window.fbq) {
 
 }
 
-setShowSuccess(true);
     setShowSuccess(true);
     setStep(0);
     window.scrollTo(0, 0);
