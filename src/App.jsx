@@ -138,10 +138,20 @@ function Navbar({ page, go, menuOpen, setMenuOpen }) {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#081d33]/95 text-white backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
-        <button onClick={() => go("home")} className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 text-xl font-black text-white">P</div>
-          <p className="text-2xl font-black">PrimUnion</p>
-        </button>
+       <button onClick={() => go("home")} className="flex items-center">
+
+  <img
+
+    src="/primunion-logo.png"
+
+    alt="PrimUnion"
+
+    className="h-14 w-auto"
+
+  />
+
+</button>
+
 
         <div className="hidden items-center gap-8 font-semibold lg:flex">
           <button onClick={() => go("home")} className={page === "home" ? "text-violet-300" : ""}>Accueil</button>
@@ -2115,9 +2125,11 @@ function Footer({ go }) {
         <div className="flex flex-col justify-between gap-8 md:flex-row">
           <div className="max-w-sm">
             <div className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 text-xl font-black text-white">P</div>
-              <p className="text-2xl font-black">PrimUnion</p>
-            </div>
+<img
+  src="/primunion-logo.png"
+  alt="PrimUnion"
+  className="h-12 w-auto"
+/>            </div>
             <p className="mt-3 text-slate-400">
   Plateforme marketing rénovation énergétique.<br />
   Partenaires et installateurs certifiés RGE.
@@ -2127,7 +2139,19 @@ function Footer({ go }) {
           <div className="flex flex-col gap-3 font-bold text-slate-300">
             <p className="text-sm uppercase tracking-wide text-slate-500">Navigation</p>
             <button onClick={() => go("admin")} className="text-left text-slate-500 transition hover:text-white">Espace partenaire</button>
-            <button onClick={() => go("home")} className="text-left transition hover:text-white">Accueil</button>
+            <button onClick={() => go("home")} className="flex items-center">
+
+              <img
+
+                src="/primunion-logo.png"
+
+                alt="PrimUnion"
+
+                className="h-12 w-auto"
+
+              />
+
+            </button>
             <button onClick={() => go("simulation")} className="text-left transition hover:text-white">Simulation</button>
             <button onClick={() => go("contact")} className="text-left transition hover:text-white">Contact</button>
           </div>
