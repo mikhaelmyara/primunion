@@ -186,10 +186,15 @@ function HomePage({ go }) {
             </div>
 
             <h1 className="text-4xl font-black leading-tight sm:text-5xl md:text-6xl">
-              Bénéficiez d'une
-              <br />
-              <span className="bg-gradient-to-r from-violet-300 to-blue-300 bg-clip-text text-transparent">pompe à chaleur</span>
-            </h1>
+Réduisez vos factures
+
+<br />
+
+<span className="bg-gradient-to-r from-violet-300 to-blue-300 bg-clip-text text-transparent">
+
+avec une rénovation énergétique financée par les aides
+
+</span>            </h1>
 
             <div className="mt-8 space-y-4 text-xl font-semibold text-slate-200">
               <p>✅ Dispositif sécurisé par MaPrimeRénov'</p>
@@ -199,7 +204,7 @@ function HomePage({ go }) {
             </div>
 
             <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4">
-              {[["17 000€", "Aides max."], ["2 min", "Simulation"], ["100%", "Gratuit"]].map(([big, small]) => (
+              {[["17 000€", "Aides max."], ["2 min", "Simulation"], ["100%", "Installation reussie"]].map(([big, small]) => (
                 <div key={big} className="min-w-0 rounded-2xl bg-white/10 p-3 text-center backdrop-blur sm:p-5">
                   <p className="break-words text-2xl font-black leading-tight sm:text-3xl">{big}</p>
                   <p className="text-sm text-slate-300">{small}</p>
@@ -232,7 +237,7 @@ function HomePage({ go }) {
       <WhySection />
       <PartnersSection />
       <ProjectStepsSection go={go} />
-      <ReviewsSection />
+      <FranceMapSection />
 
       <section className="bg-gradient-to-r from-violet-600 to-blue-600 px-5 py-16 text-center text-white">
         <h2 className="text-3xl font-black md:text-4xl">Testez votre éligibilité et découvrez vos aides</h2>
@@ -393,7 +398,7 @@ if (typeof window !== "undefined" && window.fbq) {
 
       <div className="relative mx-auto w-full max-w-3xl">
         <div className="mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-bold text-violet-100/90">
-          <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-violet-300" /> 100% gratuit</span>
+          <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-violet-300" /> 100% Installations reussies</span>
           <span className="flex items-center gap-2"><CheckCircle size={16} className="text-violet-300" /> Sans engagement</span>
           <span className="flex items-center gap-2"><Sparkles size={16} className="text-violet-300" /> Réponse en 2 min</span>
         </div>
@@ -1559,7 +1564,6 @@ function WhySection() {
           <p className="mt-4 text-xl font-bold">La garantie d’un accompagnement sérieux</p>
           <div className="mt-8 space-y-5 text-lg text-slate-200">
             {[
-              "98,8% de nos clients sont satisfaits",
               "Bénéficiez d’aides possibles pour financer votre projet",
               "Une équipe disponible étape par étape",
               "Un parcours simple, rapide et adapté",
@@ -1639,30 +1643,51 @@ function ProjectStepsSection({ go }) {
   );
 }
 
-function ReviewsSection() {
-  const reviews = [
-    ["V", "Viviane F.", "Très satisfaite de la simulation. L’équipe est professionnelle et réactive. Je recommande vivement PrimUnion pour tous vos projets de rénovation."],
-    ["M", "Lang J.", "Service impeccable du début à la fin. Contact super réactif et explications claires."],
-    ["D", "Dalil A.", "Une semaine de la simulation à l’installation, tout s’est bien déroulé."],
-  ];
-
+function FranceMapSection() {
   return (
-    <section className="bg-slate-50 px-5 py-20">
-      <div className="mx-auto max-w-7xl">
-        <h2 className="text-center text-4xl font-black">Ce que nos clients pensent de nous :</h2>
-        <div className="mt-14 grid gap-6 lg:grid-cols-3">
-          {reviews.map(([letter, name, text]) => (
-            <div key={name} className="rounded-[2rem] bg-white p-8 shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-violet-600 to-blue-600 text-xl font-black text-white">{letter}</div>
-                <div>
-                  <p className="font-black">{name}</p>
-                  <p className="text-yellow-400">★★★★★</p>
-                </div>
-              </div>
-              <p className="mt-6 text-lg text-slate-600">{text}</p>
+    <section className="bg-white px-5 py-20">
+      <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+        <div>
+          <p className="font-black uppercase tracking-wide text-violet-700">
+            Présence nationale
+          </p>
+
+          <h2 className="mt-4 text-4xl font-black leading-tight text-[#08243a] md:text-5xl">
+            PrimUnion accompagne des foyers partout en France
+          </h2>
+
+          <p className="mt-6 text-lg leading-8 text-slate-600">
+            Grâce à notre réseau de partenaires certifiés RGE, nous intervenons partout en France pour vous aider à concrétiser votre projet de rénovation énergétique, de l’estimation des aides jusqu’à l’installation.
+          </p>
+
+          <div className="mt-8 grid grid-cols-3 gap-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 text-center shadow-sm">
+              <p className="text-3xl font-black text-violet-700">Toutes</p>
+              <p className="text-sm font-bold text-slate-500">Les zones déjà accompagnées</p>
             </div>
-          ))}
+
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 text-center shadow-sm">
+              <p className="text-3xl font-black text-blue-700">100%</p>
+              <p className="text-sm font-bold text-slate-500">France métropolitaine</p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 text-center shadow-sm">
+              <p className="text-3xl font-black text-emerald-700">RGE</p>
+              <p className="text-sm font-bold text-slate-500">Partenaires certifiés</p>
+            </div>
+          </div>
+
+          <div className="mt-8 rounded-2xl bg-gradient-to-r from-violet-50 to-blue-50 p-5 font-semibold text-[#08243a]">
+            Un réseau fiable de professionnels qualifiés pour des travaux en toute sérénité.
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-xl">
+          <img
+            src="/france-map.png"
+            alt="Carte de France PrimUnion"
+            className="h-auto w-full object-cover"
+          />
         </div>
       </div>
     </section>
