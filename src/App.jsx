@@ -15,7 +15,8 @@ import {
   Euro,
 } from "lucide-react";
 
-const META_PIXEL_ID = "1021351157002707";
+const META_PIXEL_ID = "1410849997541947";
+
 
 const ADMIN_USERS = {
   "mikhaelmyara@gmail.com": { name: "Mikhael", role: "admin" },
