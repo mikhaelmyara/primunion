@@ -513,7 +513,7 @@ if (typeof window !== "undefined" && window.fbq) {
                     className="mt-0.5 h-5 w-5 shrink-0 accent-violet-600"
                   />
                   <span className="text-sm font-semibold leading-6 text-slate-600">
-                    J'accepte que PrimUnion collecte et traite mes données personnelles (nom, email, téléphone, informations logement) pour réaliser ma simulation et me recontacter. Conformément au RGPD, je peux retirer mon consentement à tout moment en écrivant à <strong>mikhaelmyara@gmail.com</strong>. *
+                    J'accepte que PrimUnion collecte et traite mes données personnelles (nom, email, téléphone, informations logement) pour réaliser ma simulation et me recontacter. Conformément au RGPD, je peux retirer mon consentement à tout moment en écrivant à <strong>primunion@hotmail.com</strong>. *
                   </span>
                 </label>
 
@@ -1513,7 +1513,7 @@ function ContactPage() {
     }]);
     setSending(false);
     if (dbError) {
-      setError("Une erreur est survenue. Veuillez nous écrire directement à mikhaelmyara@gmail.com");
+      setError("Une erreur est survenue. Veuillez nous écrire directement à primunion@hotmail.com");
       return;
     }
     setSubmitted(true);
@@ -1527,7 +1527,7 @@ function ContactPage() {
           <p className="mt-5 text-lg text-slate-600">Une question ? Envoyez-nous un message.</p>
           <div className="mt-10 space-y-5">
             <Info icon={<Phone />} text="+34 657 398 227" />
-            <Info icon={<Mail />} text="mikhaelmyara@gmail.com" />
+            <Info icon={<Mail />} text="primunion@hotmail.com" />
             <Info icon={<MapPin />} text="France / Espagne" />
           </div>
         </div>
@@ -1768,7 +1768,7 @@ function LegalPage({ go }) {
         <p><strong>Raison sociale :</strong> PrimUnion — exploitation en nom propre</p>
         <p><strong>Responsable de la publication :</strong> Mikhael Myara</p>
         <p><strong>Adresse :</strong> France / Espagne</p>
-        <p><strong>Email :</strong> mikhaelmyara@gmail.com</p>
+        <p><strong>Email :</strong> primunion@hotmail.com</p>
         <p><strong>Téléphone :</strong> +34 657 398 227</p>
         <p className="mt-2 rounded-xl bg-blue-50 p-3 text-sm font-semibold text-blue-700">
           PrimUnion est une plateforme marketing de mise en relation dans le domaine de la rénovation énergétique. Elle n'intervient pas directement dans la réalisation des travaux mais oriente les particuliers vers des partenaires certifiés RGE.
@@ -1825,7 +1825,7 @@ function PrivacyPage({ go }) {
 
       <LegalBlock title="1. Responsable du traitement">
         <p><strong>Identité :</strong> Mikhael Myara, exploitant de PrimUnion</p>
-        <p><strong>Email :</strong> mikhaelmyara@gmail.com</p>
+        <p><strong>Email :</strong> primunion@hotmail.com</p>
         <p><strong>Téléphone :</strong> +34 657 398 227</p>
         <p className="mt-2 rounded-xl bg-violet-50 p-3 text-sm font-semibold text-violet-700">
           Pour toute demande relative à vos données personnelles, contactez-nous à l'adresse ci-dessus en précisant l'objet « Demande RGPD ».
@@ -1898,7 +1898,7 @@ function PrivacyPage({ go }) {
           <li><strong>Droit de retrait du consentement</strong> — retirer votre consentement à tout moment, sans que cela remette en cause la licéité du traitement effectué avant ce retrait.</li>
         </ul>
         <p className="mt-4 rounded-xl bg-green-50 p-4 font-semibold text-green-800">
-          Pour exercer l'un de ces droits, écrivez à <strong>mikhaelmyara@gmail.com</strong> en indiquant l'objet « Demande RGPD » et en joignant une copie de votre pièce d'identité. Délai de réponse : 30 jours maximum.
+          Pour exercer l'un de ces droits, écrivez à <strong>primunion@hotmail.com</strong> en indiquant l'objet « Demande RGPD » et en joignant une copie de votre pièce d'identité. Délai de réponse : 30 jours maximum.
         </p>
         <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de la <strong>CNIL</strong> (Commission Nationale de l'Informatique et des Libertés) : <a href="https://www.cnil.fr/fr/plaintes" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">cnil.fr/fr/plaintes</a>.</p>
       </LegalBlock>
@@ -2111,7 +2111,7 @@ function CookiesPage({ go }) {
       </LegalBlock>
 
       <LegalBlock title="6. Contact">
-        <p>Pour toute question relative aux cookies : <strong>mikhaelmyara@gmail.com</strong></p>
+        <p>Pour toute question relative aux cookies : <strong>primunion@hotmail.com</strong></p>
         <p>Autorité de contrôle : <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">CNIL — cnil.fr</a></p>
       </LegalBlock>
     </LegalLayout>
