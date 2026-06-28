@@ -1526,7 +1526,7 @@ function ContactPage() {
           <h1 className="mt-3 text-5xl font-black">Parlons de votre projet</h1>
           <p className="mt-5 text-lg text-slate-600">Une question ? Envoyez-nous un message.</p>
           <div className="mt-10 space-y-5">
-            <Info icon={<Phone />} text="+34 657 398 227" />
+            <Info icon={<Phone />} text="+33 7 83 44 52 42" />
             <Info icon={<Mail />} text="primunion@hotmail.com" />
             <Info icon={<MapPin />} text="France / Espagne" />
           </div>
@@ -1769,7 +1769,7 @@ function LegalPage({ go }) {
         <p><strong>Responsable de la publication :</strong> Mikhael Myara</p>
         <p><strong>Adresse :</strong> France / Espagne</p>
         <p><strong>Email :</strong> primunion@hotmail.com</p>
-        <p><strong>Téléphone :</strong> +34 657 398 227</p>
+        <p><strong>Téléphone :</strong> +33 7 83 44 52 42</p>
         <p className="mt-2 rounded-xl bg-blue-50 p-3 text-sm font-semibold text-blue-700">
           PrimUnion est une plateforme marketing de mise en relation dans le domaine de la rénovation énergétique. Elle n'intervient pas directement dans la réalisation des travaux mais oriente les particuliers vers des partenaires certifiés RGE.
         </p>
@@ -1826,7 +1826,7 @@ function PrivacyPage({ go }) {
       <LegalBlock title="1. Responsable du traitement">
         <p><strong>Identité :</strong> Mikhael Myara, exploitant de PrimUnion</p>
         <p><strong>Email :</strong> primunion@hotmail.com</p>
-        <p><strong>Téléphone :</strong> +34 657 398 227</p>
+        <p><strong>Téléphone :</strong> +33 7 83 44 52 42</p>
         <p className="mt-2 rounded-xl bg-violet-50 p-3 text-sm font-semibold text-violet-700">
           Pour toute demande relative à vos données personnelles, contactez-nous à l'adresse ci-dessus en précisant l'objet « Demande RGPD ».
         </p>
